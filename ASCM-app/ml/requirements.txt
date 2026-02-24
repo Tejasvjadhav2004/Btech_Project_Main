@@ -1,0 +1,5 @@
+pandas
+scikit-learn
+networkx
+torch
+# Note: torch-geometric (PyG) has platform-specific install steps; see ml/README.md

@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  streamlit:
+    build:
+      context: ../frontend
+      dockerfile: ../infra/Dockerfile.frontend
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ascm
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
