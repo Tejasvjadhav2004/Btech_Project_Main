@@ -1,8 +1,21 @@
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# Database files
 *.sqlite3
+*.db
+
+# Environment
 .env
 venv/
 .venv/
+
+# Streamlit cache
+.streamlit/
+
+# OS
+.DS_Store
+Thumbs.db
