@@ -2,7 +2,11 @@
 Configuration settings for the Supply Chain Management API
 """
 from pydantic_settings import BaseSettings
+<<<<<<< HEAD
 from typing import List
+=======
+from typing import List, Optional
+>>>>>>> b4e87f0f409affa60273b8281490cd792f923621
 
 
 class Settings(BaseSettings):
@@ -12,6 +16,20 @@ class Settings(BaseSettings):
     mongodb_uri: str = "mongodb://localhost:27017/"
     mongodb_database_name: str = "supply_chain_db"
     
+<<<<<<< HEAD
+=======
+    # MongoDB Docker Credentials (optional - used by docker-compose)
+    mongo_initdb_root_username: Optional[str] = None
+    mongo_initdb_root_password: Optional[str] = None
+    mongo_initdb_database: Optional[str] = None
+    
+    # Mongo Express Configuration (optional - used by docker-compose)
+    me_config_mongodb_adminusername: Optional[str] = None
+    me_config_mongodb_adminpassword: Optional[str] = None
+    me_config_basicauth_username: Optional[str] = None
+    me_config_basicauth_password: Optional[str] = None
+    
+>>>>>>> b4e87f0f409affa60273b8281490cd792f923621
     # API Configuration
     api_host: str = "0.0.0.0"
     api_port: int = 8000
