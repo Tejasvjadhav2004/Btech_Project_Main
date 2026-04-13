@@ -1,24 +1,28 @@
 # Quick Start Guide
 
-Get the Supply Chain Management System running in 5 minutes!
+Get the Supply Chain Management System running in 4 minutes!
 
-## 🚀 Setup in 5 Steps
+## 🚀 Setup in 4 Steps
 
-### Step 1: Install Dependencies
+### Step 1: Configure MongoDB Atlas
 
+Copy `backend/.env.example` to `backend/.env` and configure your MongoDB Atlas connection:
 ```bash
-pip install -r requirements.txt
+cp backend/.env.example backend/.env
 ```
 
-### Step 2: Start MongoDB
-
-```bash
-docker-compose up -d
+Update the `.env` file with your MongoDB Atlas connection string:
+```env
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/
+MONGODB_DATABASE_NAME=supply_chain_db
 ```
 
-Wait a few seconds for MongoDB to start. Verify it's running:
+Replace `<username>`, `<password>`, and `<cluster>` with your MongoDB Atlas credentials.
+
+### Step 2: Install Dependencies
+
 ```bash
-docker-compose ps
+pip install -r backend/requirements.txt
 ```
 
 ### Step 3: Place Your Data Files
@@ -30,7 +34,7 @@ Put your CSV files in the `data/` directory:
 ### Step 4: Seed the Database
 
 ```bash
-python scripts/seed_data.py
+python backend/scripts/seed_data.py
 ```
 
 This will load and transform your data into MongoDB.
@@ -39,12 +43,12 @@ This will load and transform your data into MongoDB.
 
 **Terminal 1 - Start FastAPI Backend:**
 ```bash
-uvicorn api.main:app --reload
+uvicorn backend.api.main:app --reload
 ```
 
 **Terminal 2 - Start Streamlit Dashboard:**
 ```bash
-streamlit run dashboard/app.py
+streamlit run backend/dashboard/app.py
 ```
 
 ## 🎉 Access Your System
@@ -52,7 +56,6 @@ streamlit run dashboard/app.py
 - **API**: http://localhost:8000
 - **API Docs**: http://localhost:8000/docs
 - **Dashboard**: http://localhost:8501
-- **MongoDB Express**: http://localhost:8081 (admin/admin123)
 
 ## 📊 What You'll See
 
@@ -99,31 +102,18 @@ curl -X POST http://localhost:8000/api/orders \
 
 ## 🔍 Troubleshooting
 
-### MongoDB won't start
-
-```bash
-# Check logs
-docker-compose logs mongodb
-
-# Restart MongoDB
-docker-compose restart mongodb
-
-# Stop and remove volumes (fresh start)
-docker-compose down -v
-docker-compose up -d
-```
-
 ### Can't connect to MongoDB
 
-1. Check if MongoDB is running: `docker-compose ps`
-2. Check your `.env` file has correct `MONGODB_URI`
-3. Wait a few seconds for MongoDB to fully start
+1. Verify your MongoDB Atlas cluster is running
+2. Check your `.env` file has correct `MONGODB_URI` connection string
+3. Ensure your IP address is whitelisted in MongoDB Atlas
+4. Verify your MongoDB Atlas credentials are correct
 
 ### Dashboard shows no data
 
 1. Make sure you ran the seed script: `python scripts/seed_data.py`
 2. Check the seed script output for errors
-3. Verify data in MongoDB Express at http://localhost:8081
+3. Verify data in your MongoDB Atlas dashboard
 
 ### API returns errors
 
@@ -137,7 +127,7 @@ docker-compose up -d
 2. **Test the APIs** - Try all endpoints in `/docs`
 3. **Create orders** - Simulate order processing
 4. **Monitor alerts** - Watch for low stock warnings
-5. **Check MongoDB** - View your data in MongoDB Express
+5. **Check MongoDB** - View your data in MongoDB Atlas dashboard
 
 ## 🎓 Learn More
 
@@ -150,7 +140,7 @@ docker-compose up -d
 If you encounter issues:
 
 1. Check the terminal logs
-2. Review MongoDB logs: `docker-compose logs mongodb`
+2. Review your MongoDB Atlas dashboard for connection issues
 3. Verify all files are in correct locations
 4. Ensure dependencies are installed
 
@@ -160,10 +150,10 @@ To prepare for production:
 
 1. Update `.env` with production settings
 2. Use environment variables for sensitive data
-3. Set up proper MongoDB authentication
+3. Use production-ready MongoDB Atlas cluster
 4. Configure CORS for your domain
 5. Add logging and monitoring
-6. Set up backups for MongoDB
+6. Ensure MongoDB Atlas backups are configured
 
 ---
 

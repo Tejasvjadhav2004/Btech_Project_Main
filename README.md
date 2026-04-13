@@ -60,48 +60,60 @@ Phase 1 focuses on building the core infrastructure and monitoring capabilities:
 ```
 supply-chain-management/
 │
-├── api/                          # FastAPI application
-│   ├── __init__.py
-│   ├── main.py                   # FastAPI app entry point
-│   ├── config.py                 # Application settings
-│   ├── models/                   # Pydantic models
+├── backend/                      # Backend application
+│   ├── myenv310/                 # Python virtual environment
+│   ├── .env.example              # Environment variable template
+│   ├── requirements.txt          # Python dependencies
+│   ├── api/                      # FastAPI application
 │   │   ├── __init__.py
-│   │   ├── product.py
-│   │   ├── warehouse.py
-│   │   ├── store.py
-│   │   ├── inventory.py
-│   │   ├── supplier.py
-│   │   └── order.py
-│   └── routers/                  # API route handlers
-│       ├── __init__.py
-│       ├── products.py
-│       ├── warehouses.py
-│       ├── stores.py
-│       ├── inventory.py
-│       ├── dashboard.py
-│       └── orders.py
+│   │   ├── main.py               # FastAPI app entry point
+│   │   ├── config.py             # Application settings
+│   │   ├── models/               # Pydantic models
+│   │   │   ├── __init__.py
+│   │   │   ├── product.py
+│   │   │   ├── warehouse.py
+│   │   │   ├── store.py
+│   │   │   ├── inventory.py
+│   │   │   ├── supplier.py
+│   │   │   └── order.py
+│   │   └── routers/              # API route handlers
+│   │       ├── __init__.py
+│   │       ├── products.py
+│   │       ├── warehouses.py
+│   │       ├── stores.py
+│   │       ├── inventory.py
+│   │       ├── dashboard.py
+│   │       └── orders.py
+│   │
+│   ├── db/                       # Database layer
+│   │   ├── __init__.py
+│   │   └── connection.py         # MongoDB connection manager
+│   │
+│   ├── services/                 # Business logic layer
+│   │   ├── __init__.py
+│   │   ├── monitoring_service.py # Stock monitoring & KPIs
+│   │   ├── order_service.py      # Order management
+│   │   ├── inventory_service.py  # Inventory operations
+│   │   └── analytics_service.py  # Advanced analytics
+│   │
+│   ├── scripts/                  # Data processing scripts
+│   │   ├── data_loader.py        # CSV data loading
+│   │   ├── data_transformer.py   # Data transformation
+│   │   ├── data_generator.py     # Synthetic data generation
+│   │   ├── mongo_initializer.py  # MongoDB initialization
+│   │   └── seed_data.py          # Main seeding script
+│   │
+│   ├── dashboard/                # Streamlit dashboard
+│   │   ├── __init__.py
+│   │   └── app.py                # Dashboard application
+│   │
+│   └── tests/                    # Test files
+│       └── test_intelligence.py
 │
-├── db/                           # Database layer
-│   ├── __init__.py
-│   └── connection.py             # MongoDB connection manager
-│
-├── services/                     # Business logic layer
-│   ├── __init__.py
-│   ├── monitoring_service.py     # Stock monitoring & KPIs
-│   ├── order_service.py          # Order management
-│   ├── inventory_service.py      # Inventory operations
-│   └── analytics_service.py      # Advanced analytics
-│
-├── scripts/                      # Data processing scripts
-│   ├── data_loader.py            # CSV data loading
-│   ├── data_transformer.py       # Data transformation
-│   ├── data_generator.py         # Synthetic data generation
-│   ├── mongo_initializer.py      # MongoDB initialization
-│   └── seed_data.py              # Main seeding script
-│
-├── dashboard/                    # Streamlit dashboard
-│   ├── __init__.py
-│   └── app.py                    # Dashboard application
+├── frontend/                     # Frontend application
+│   ├── src/
+│   ├── public/
+│   └── package.json
 │
 ├── data/                         # Data files
 │   ├── supply_chain_data.csv     # Supply chain dataset
@@ -110,10 +122,6 @@ supply-chain-management/
 ├── plans/                        # Documentation
 │   └── phase1_architect_plan.md  # Architect plan
 │
-├── .env                          # Environment variables (create from .env.example)
-├── .env.example                  # Environment variable template
-├── docker-compose.yml            # Docker services (MongoDB)
-├── requirements.txt              # Python dependencies
 └── README.md                     # This file
 ```
 
@@ -122,8 +130,7 @@ supply-chain-management/
 ### Prerequisites
 
 - Python 3.9 or higher
-- Docker and Docker Compose
-- MongoDB (via Docker)
+- MongoDB Atlas account with a configured cluster
 
 ### Installation
 
@@ -133,51 +140,38 @@ supply-chain-management/
    cd supply-chain-management
    ```
 
-2. **Create virtual environment**
+2. **Activate virtual environment**
    ```bash
-   python -m venv venv
-   
    # On Windows
-   venv\Scripts\activate
+   backend\myenv310\Scripts\activate
    
    # On macOS/Linux
-   source venv/bin/activate
+   source backend/myenv310/bin/activate
    ```
 
 3. **Install dependencies**
    ```bash
-   pip install -r requirements.txt
+   pip install -r backend/requirements.txt
    ```
 
-4. **Set up MongoDB with Docker**
+4. **Configure environment variables**
+   
+   Copy `backend/.env.example` to `backend/.env` and configure your MongoDB Atlas connection:
    ```bash
-   docker-compose up -d
+   cp backend/.env.example backend/.env
    ```
    
-   This starts:
-   - MongoDB on port 27017
-   - MongoDB Express on port 8081 (web UI at http://localhost:8081)
-   
-   Default credentials:
-   - Username: `admin`
-   - Password: `admin123`
-
-5. **Configure environment variables**
-   
-   Copy `.env.example` to `.env` and edit if needed:
-   ```bash
-   cp .env.example .env
-   ```
-   
-   Default configuration:
+   Update the `.env` file with your MongoDB Atlas connection string:
    ```env
-   MONGODB_URI=mongodb://admin:admin123@localhost:27017/
+   MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/
    MONGODB_DATABASE_NAME=supply_chain_db
    ```
    
+   Replace `<username>`, `<password>`, and `<cluster>` with your MongoDB Atlas credentials.
+   
    All other settings use sensible defaults.
 
-6. **Seed the database**
+5. **Seed the database**
    
    Place your CSV files in the `data/` directory:
    - `supply_chain_data.csv`
@@ -185,7 +179,7 @@ supply-chain-management/
    
    Then run:
    ```bash
-   python scripts/seed_data.py
+   python backend/scripts/seed_data.py
    ```
    
    This will:
@@ -201,13 +195,13 @@ supply-chain-management/
    - 8 stores across 8 cities
    - Inventory with proper stock distribution
 
-7. **Start the FastAPI backend**
+6. **Start the FastAPI backend**
    ```bash
    # Option 1: Using uvicorn directly
-   uvicorn api.main:app --reload
+   uvicorn backend.api.main:app --reload
    
    # Option 2: Using python
-   python -m uvicorn api.main:app --reload
+   python -m uvicorn backend.api.main:app --reload
    ```
    
    The API will be available at:
@@ -215,11 +209,11 @@ supply-chain-management/
    - Interactive Docs: http://localhost:8000/docs
    - Health Check: http://localhost:8000/health
 
-8. **Start the Streamlit dashboard**
+7. **Start the Streamlit dashboard**
    
    In a new terminal:
    ```bash
-   streamlit run dashboard/app.py
+   streamlit run backend/dashboard/app.py
    ```
    
    The dashboard will be available at:
@@ -470,11 +464,11 @@ supply-chain-management/
 
 ### Environment Variables
 
-Create a `.env` file in the project root:
+Create a `.env` file in the project root with your MongoDB Atlas credentials:
 
 ```env
-# MongoDB Configuration
-MONGODB_URI=mongodb://admin:admin123@localhost:27017/
+# MongoDB Configuration (MongoDB Atlas)
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/
 MONGODB_DATABASE_NAME=supply_chain_db
 
 # API Configuration
@@ -593,30 +587,6 @@ alerts = response.json()
 print(alerts)
 ```
 
-## 🚢 Docker Services
-
-### MongoDB + MongoDB Express
-
-```bash
-# Start services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f mongodb
-
-# Stop services
-docker-compose down
-
-# Stop and remove volumes
-docker-compose down -v
-```
-
-### Access MongoDB Express
-
-- URL: http://localhost:8081
-- Username: `admin`
-- Password: `admin123`
-
 ## 📊 Example Data
 
 After seeding, you'll have:
@@ -682,14 +652,14 @@ Built with:
 For issues or questions:
 1. Check the [Architect Plan](plans/phase1_architect_plan.md)
 2. Review API docs at `/docs`
-3. Check MongoDB logs: `docker-compose logs mongodb`
+3. Check your MongoDB Atlas dashboard
 4. Check API logs in terminal
 
 ## 🎯 Success Criteria
 
 Phase 1 is successful when:
 
-- ✅ MongoDB is running and seeded with data
+- ✅ MongoDB Atlas is connected and seeded with data
 - ✅ All API endpoints return correct data
 - ✅ Dashboard displays KPIs and charts correctly
 - ✅ Low stock alerts are detected and shown

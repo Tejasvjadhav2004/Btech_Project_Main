@@ -37,48 +37,47 @@ A complete, production-ready supply chain management system with:
 - [`PROJECT_SUMMARY.md`](PROJECT_SUMMARY.md) - This file
 
 ### 2. Configuration & Infrastructure
-- [`requirements.txt`](requirements.txt) - All Python dependencies
-- [`docker-compose.yml`](docker-compose.yml) - MongoDB + MongoDB Express
-- [`.env.example`](.env.example) - Environment variable template
-- [`api/config.py`](api/config.py) - Application settings
+- [`backend/requirements.txt`](backend/requirements.txt) - All Python dependencies
+- [`backend/.env.example`](backend/.env.example) - Environment variable template
+- [`backend/api/config.py`](backend/api/config.py) - Application settings
 
 ### 3. Database Layer
-- [`db/connection.py`](db/connection.py) - MongoDB connection manager (singleton pattern)
+- [`backend/db/connection.py`](backend/db/connection.py) - MongoDB connection manager (singleton pattern)
 
 ### 4. Data Pipeline
-- [`scripts/data_loader.py`](scripts/data_loader.py) - CSV data loading and validation
-- [`scripts/data_transformer.py`](scripts/data_transformer.py) - Data transformation to MongoDB schema
-- [`scripts/data_generator.py`](scripts/data_generator.py) - Synthetic data generation
-- [`scripts/mongo_initializer.py`](scripts/mongo_initializer.py) - MongoDB initialization with indexes
-- [`scripts/seed_data.py`](scripts/seed_data.py) - Main seeding orchestration
+- [`backend/scripts/data_loader.py`](backend/scripts/data_loader.py) - CSV data loading and validation
+- [`backend/scripts/data_transformer.py`](backend/scripts/data_transformer.py) - Data transformation to MongoDB schema
+- [`backend/scripts/data_generator.py`](backend/scripts/data_generator.py) - Synthetic data generation
+- [`backend/scripts/mongo_initializer.py`](backend/scripts/mongo_initializer.py) - MongoDB initialization with indexes
+- [`backend/scripts/seed_data.py`](backend/scripts/seed_data.py) - Main seeding orchestration
 
 ### 5. API Models (Pydantic)
-- [`api/models/product.py`](api/models/product.py) - Product models with AI fields
-- [`api/models/warehouse.py`](api/models/warehouse.py) - Warehouse models
-- [`api/models/store.py`](api/models/store.py) - Store models
-- [`api/models/inventory.py`](api/models/inventory.py) - Inventory models
-- [`api/models/supplier.py`](api/models/supplier.py) - Supplier models
-- [`api/models/order.py`](api/models/order.py) - Order models
+- [`backend/api/models/product.py`](backend/api/models/product.py) - Product models with AI fields
+- [`backend/api/models/warehouse.py`](backend/api/models/warehouse.py) - Warehouse models
+- [`backend/api/models/store.py`](backend/api/models/store.py) - Store models
+- [`backend/api/models/inventory.py`](backend/api/models/inventory.py) - Inventory models
+- [`backend/api/models/supplier.py`](backend/api/models/supplier.py) - Supplier models
+- [`backend/api/models/order.py`](backend/api/models/order.py) - Order models
 
 ### 6. Services Layer
-- [`services/monitoring_service.py`](services/monitoring_service.py) - KPIs, stock monitoring, alerts
-- [`services/order_service.py`](services/order_service.py) - Order management
-- [`services/inventory_service.py`](services/inventory_service.py) - Inventory operations
-- [`services/analytics_service.py`](services/analytics_service.py) - Advanced analytics
+- [`backend/services/monitoring_service.py`](backend/services/monitoring_service.py) - KPIs, stock monitoring, alerts
+- [`backend/services/order_service.py`](backend/services/order_service.py) - Order management
+- [`backend/services/inventory_service.py`](backend/services/inventory_service.py) - Inventory operations
+- [`backend/services/analytics_service.py`](backend/services/analytics_service.py) - Advanced analytics
 
 ### 7. API Routers
-- [`api/routers/products.py`](api/routers/products.py) - Product endpoints
-- [`api/routers/warehouses.py`](api/routers/warehouses.py) - Warehouse endpoints
-- [`api/routers/stores.py`](api/routers/stores.py) - Store endpoints
-- [`api/routers/inventory.py`](api/routers/inventory.py) - Inventory endpoints
-- [`api/routers/dashboard.py`](api/routers/dashboard.py) - Dashboard endpoints
-- [`api/routers/orders.py`](api/routers/orders.py) - Order endpoints
+- [`backend/api/routers/products.py`](backend/api/routers/products.py) - Product endpoints
+- [`backend/api/routers/warehouses.py`](backend/api/routers/warehouses.py) - Warehouse endpoints
+- [`backend/api/routers/stores.py`](backend/api/routers/stores.py) - Store endpoints
+- [`backend/api/routers/inventory.py`](backend/api/routers/inventory.py) - Inventory endpoints
+- [`backend/api/routers/dashboard.py`](backend/api/routers/dashboard.py) - Dashboard endpoints
+- [`backend/api/routers/orders.py`](backend/api/routers/orders.py) - Order endpoints
 
 ### 8. Main Application
-- [`api/main.py`](api/main.py) - FastAPI application with all routers
+- [`backend/api/main.py`](backend/api/main.py) - FastAPI application with all routers
 
 ### 9. Dashboard
-- [`dashboard/app.py`](dashboard/app.py) - Complete Streamlit dashboard
+- [`backend/dashboard/app.py`](backend/dashboard/app.py) - Complete Streamlit dashboard
 
 ---
 
@@ -161,26 +160,25 @@ A complete, production-ready supply chain management system with:
 
 ```bash
 # 1. Install dependencies
-pip install -r requirements.txt
+pip install -r backend/requirements.txt
 
-# 2. Start MongoDB
-docker-compose up -d
+# 2. Configure MongoDB Atlas
+# Update backend/.env with your MongoDB Atlas connection string
 
 # 3. Seed the database
-python scripts/seed_data.py
+python backend/scripts/seed_data.py
 
 # 4. Start API (Terminal 1)
-uvicorn api.main:app --reload
+uvicorn backend.api.main:app --reload
 
 # 5. Start Dashboard (Terminal 2)
-streamlit run dashboard/app.py
+streamlit run backend/dashboard/app.py
 ```
 
 **Access:**
 - API: http://localhost:8000
 - API Docs: http://localhost:8000/docs
 - Dashboard: http://localhost:8501
-- MongoDB Express: http://localhost:8081
 
 ---
 
@@ -271,7 +269,6 @@ streamlit run dashboard/app.py
 - API Documentation at `/docs` (auto-generated by FastAPI)
 
 ### For Operations
-- Docker Compose for easy deployment
 - Environment-based configuration
 - Health check endpoints
 - Logging throughout
