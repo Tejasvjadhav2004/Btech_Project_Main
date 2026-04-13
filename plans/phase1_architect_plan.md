@@ -418,9 +418,10 @@ supply_chain_management/
 ├── requirements.txt                # Python dependencies
 ├── .env.example                    # Environment variables template
 ├── .gitignore
-├── README.md
-└── docker-compose.yml              # Docker setup for MongoDB
+└── README.md
 ```
+
+**Note:** All backend files (api/, db/, services/, scripts/, dashboard/, tests/, requirements.txt, .env.example) and the virtual environment (myenv310/) are organized under the `backend/` directory for better project structure.
 
 ---
 
@@ -876,7 +877,6 @@ def update_inventory(order_items: List[OrderItem]):
 - **plotly 5.17+**: Interactive charts for Streamlit
 
 ### Development Tools
-- **Docker & Docker Compose**: Containerization
 - **pytest 7.4+**: Testing framework
 - **black 23.11+**: Code formatting
 - **flake8 6.1+**: Linting
@@ -889,7 +889,7 @@ def update_inventory(order_items: List[OrderItem]):
 1. Initialize project structure
 2. Set up virtual environment
 3. Install dependencies
-4. Configure MongoDB (Docker)
+4. Configure MongoDB Atlas
 5. Set up environment variables
 
 ### Phase 1.2: Data Pipeline
@@ -1016,12 +1016,12 @@ def update_inventory(order_items: List[OrderItem]):
 ## 🚀 Deployment Strategy
 
 ### Development Environment
-1. Local MongoDB via Docker
+1. MongoDB Atlas
 2. FastAPI with auto-reload
 3. Streamlit with auto-refresh
 
 ### Production Considerations (Future)
-1. MongoDB Atlas or self-hosted cluster
+1. Production-ready MongoDB Atlas cluster
 2. Gunicorn/Uvicorn workers
 3. Nginx reverse proxy
 4. SSL/TLS termination
