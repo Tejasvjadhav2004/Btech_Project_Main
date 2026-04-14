@@ -31,8 +31,9 @@ app.add_middleware(
 )
 
 # Include routers
-from api.routers import products, warehouses, stores, inventory, dashboard, orders, deliveries, signals
+from api.routers import products, warehouses, stores, inventory, dashboard, orders, deliveries, signals, forecast
 
+logger.info("Registering routers...")
 app.include_router(products.router)
 app.include_router(warehouses.router)
 app.include_router(stores.router)
@@ -40,7 +41,10 @@ app.include_router(inventory.router)
 app.include_router(dashboard.router)
 app.include_router(orders.router)
 app.include_router(deliveries.router)
+logger.info(f"Registering signals router with prefix: {signals.router.prefix}")
 app.include_router(signals.router)
+app.include_router(forecast.router)
+logger.info("All routers registered successfully")
 
 
 @app.on_event("startup")

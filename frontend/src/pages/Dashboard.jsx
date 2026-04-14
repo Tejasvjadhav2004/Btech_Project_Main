@@ -23,10 +23,10 @@ const Dashboard = () => {
           getDashboardMetrics()
         ]);
         setOverview(overviewData);
-        setProductStock(Array.isArray(productStockData) ? productStockData : []);
-        setWarehouseStock(Array.isArray(warehouseStockData) ? warehouseStockData : []);
-        setStoreStock(Array.isArray(storeStockData) ? storeStockData : []);
-        setLowStock(Array.isArray(lowStockData) ? lowStockData : []);
+        setProductStock(Array.isArray(productStockData?.distribution) ? productStockData.distribution : []);
+        setWarehouseStock(Array.isArray(warehouseStockData?.warehouses) ? warehouseStockData.warehouses : []);
+        setStoreStock(Array.isArray(storeStockData?.stores) ? storeStockData.stores : []);
+        setLowStock(Array.isArray(lowStockData?.items) ? lowStockData.items : []);
         setMetrics(metricsData || {});
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
@@ -46,27 +46,27 @@ const Dashboard = () => {
   const categoryData = productStock.reduce((acc, item) => {
     const existing = acc.find(d => d.name === (item.category || 'Other'));
     if (existing) {
-      existing.value += item.stock || 0;
+      existing.value += item.total_quantity || item.quantity || 0;
     } else {
-      acc.push({ name: item.category || 'Other', value: item.stock || 0, color: getColorForCategory(item.category) });
+      acc.push({ name: item.category || 'Other', value: item.total_quantity || item.quantity || 0, color: getColorForCategory(item.category) });
     }
     return acc;
   }, []).slice(0, 6);
 
   // Top 10 products by revenue - using product stock data (assuming stock correlates with demand)
   const topProductsData = productStock
-    .sort((a, b) => (b.stock || 0) - (a.stock || 0))
+    .sort((a, b) => (b.total_revenue || b.total_sales || 0) - (a.total_revenue || a.total_sales || 0))
     .slice(0, 10)
     .map(item => ({
-      name: (item.product_name || item.sku || 'Unknown').substring(0, 20),
-      revenue: (item.stock || 0) * 10 // Assuming $10 per unit as placeholder
+      name: (item.name || item.product_name || item.sku || 'Unknown').substring(0, 20),
+      revenue: item.total_revenue || item.total_sales || 0
     }));
 
   // Warehouse utilization and stock
   const warehouseData = warehouseStock.map(wh => ({
     name: wh.warehouse_id || wh.name || 'Unknown',
-    utilization: wh.utilization || 0,
-    stock: wh.stock || 0
+    utilization: wh.utilization_rate || wh.utilization || 0,
+    stock: wh.current_utilization || 0
   }));
 
   function getColorForCategory(category) {

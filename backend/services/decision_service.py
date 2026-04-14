@@ -532,14 +532,18 @@ class DecisionService:
     
     def get_pending_replenishment_orders(self) -> List[Dict[str, Any]]:
         """Get all pending replenishment orders"""
-        orders = list(self.db.replenishment_orders.find({
-            "status": "pending_approval"
-        }).sort("created_at", -1))
-        
-        for order in orders:
-            order["id"] = str(order.pop("_id"))
-        
-        return orders
+        try:
+            orders = list(self.db.replenishment_orders.find({
+                "status": "pending_approval"
+            }).sort("created_at", -1))
+            
+            for order in orders:
+                order["id"] = str(order.pop("_id"))
+            
+            return orders
+        except Exception as e:
+            logger.error(f"Error fetching pending replenishment orders: {e}")
+            return []
     
     def approve_replenishment_order(self, order_id: str) -> Dict[str, Any]:
         """Approve a replenishment order"""
@@ -567,19 +571,28 @@ class DecisionService:
         limit: int = 100
     ) -> List[Dict[str, Any]]:
         """Get alerts with optional filters"""
+        logger.info(f"get_alerts called with: acknowledged={acknowledged}, severity={severity}, limit={limit}")
         query = {}
-        
+
         if acknowledged is not None:
             query["acknowledged"] = acknowledged
         if severity:
             query["severity"] = severity
-        
-        alerts = list(self.db.alerts.find(query).sort("created_at", -1).limit(limit))
-        
-        for alert in alerts:
-            alert["id"] = str(alert.pop("_id"))
-        
-        return alerts
+
+        logger.info(f"Query: {query}")
+
+        try:
+            logger.info(f"Attempting to query alerts collection...")
+            alerts = list(self.db.alerts.find(query).sort("created_at", -1).limit(limit))
+            logger.info(f"Found {len(alerts)} alerts")
+
+            for alert in alerts:
+                alert["id"] = str(alert.pop("_id"))
+
+            return alerts
+        except Exception as e:
+            logger.error(f"Error fetching alerts: {e}")
+            return []
     
     def acknowledge_alert(self, alert_id: str) -> Dict[str, Any]:
         """Acknowledge an alert"""
@@ -622,7 +635,7 @@ class DecisionService:
         })
         
         # Count unacknowledged alerts
-        unack_alerts = self.db.alerts.count_documents({"acknowledged": False})
+        unack_alerts = self.db.signals.count_documents({"acknowledged": False})
         
         # Count open escalations
         open_escalations = self.db.escalations.count_documents({"status": "open"})
