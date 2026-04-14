@@ -87,6 +87,123 @@ async def get_signal_stats():
     return signal_service.get_signal_stats()
 
 
+# ========================================
+# REPLENISHMENT ORDERS (Must be before /{signal_id} to avoid routing conflicts)
+# ========================================
+
+@router.get("/replenishment-orders")
+async def get_replenishment_orders():
+    """Get pending replenishment orders"""
+    orders = decision_service.get_pending_replenishment_orders()
+    return {"orders": orders, "count": len(orders)}
+
+
+@router.post("/replenishment-orders/{order_id}/approve")
+async def approve_replenishment_order(order_id: str):
+    """Approve a replenishment order"""
+    result = decision_service.approve_replenishment_order(order_id)
+    if not result.get("success"):
+        raise HTTPException(status_code=404, detail=result.get("error", "Order not found"))
+    return result
+
+
+# ========================================
+# SCHEDULER ENDPOINTS (Must be before /{signal_id} to avoid routing conflicts)
+# ========================================
+
+@router.get("/scheduler/status")
+async def get_scheduler_status():
+    """Get scheduler status and job information"""
+    return scheduler_service.get_status()
+
+
+@router.post("/scheduler/start")
+async def start_scheduler():
+    """Start the background scheduler"""
+    scheduler_service.start()
+    return {"message": "Scheduler started", "status": scheduler_service.get_status()}
+
+
+@router.post("/scheduler/stop")
+async def stop_scheduler():
+    """Stop the background scheduler"""
+    scheduler_service.stop()
+    return {"message": "Scheduler stopped", "status": scheduler_service.get_status()}
+
+
+@router.post("/scheduler/pause")
+async def pause_scheduler():
+    """Pause all scheduled jobs"""
+    scheduler_service.pause()
+    return {"message": "Scheduler paused"}
+
+
+@router.post("/scheduler/resume")
+async def resume_scheduler():
+    """Resume all scheduled jobs"""
+    scheduler_service.resume()
+    return {"message": "Scheduler resumed"}
+
+
+@router.get("/scheduler/jobs")
+async def get_scheduler_jobs():
+    """Get all scheduled jobs"""
+    return {"jobs": scheduler_service.get_all_jobs()}
+
+
+@router.get("/scheduler/jobs/{job_id}")
+async def get_job_info(job_id: str):
+    """Get information about a specific job"""
+    job = scheduler_service.get_job_info(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+    return job
+
+
+@router.post("/scheduler/jobs/{job_id}/run")
+async def run_job_now(job_id: str):
+    """Run a specific job immediately"""
+    result = scheduler_service.run_job_now(job_id)
+    if not result.get("success"):
+        raise HTTPException(status_code=400, detail=result.get("error", "Job execution failed"))
+    return result
+
+
+@router.post("/scheduler/jobs/{job_id}/pause")
+async def pause_job(job_id: str):
+    """Pause a specific job"""
+    scheduler_service.pause_job(job_id)
+    return {"message": f"Job {job_id} paused"}
+
+
+@router.post("/scheduler/jobs/{job_id}/resume")
+async def resume_job(job_id: str):
+    """Resume a specific job"""
+    scheduler_service.resume_job(job_id)
+    return {"message": f"Job {job_id} resumed"}
+
+
+@router.get("/health")
+async def intelligence_health():
+    """Health check for intelligence layer"""
+    collections_status = verify_collections()
+    scheduler_status = scheduler_service.get_status()
+    signal_stats = signal_service.get_signal_stats()
+    
+    return {
+        "status": "healthy",
+        "collections": collections_status,
+        "scheduler": {
+            "is_running": scheduler_status["is_running"],
+            "job_count": scheduler_status["job_count"]
+        },
+        "signals": {
+            "active": signal_stats.get("active_signals", 0),
+            "total": signal_stats.get("total_signals", 0)
+        }
+    }
+
+
 @router.get("/{signal_id}")
 async def get_signal(signal_id: str):
     """Get a specific signal by ID"""
@@ -252,102 +369,6 @@ async def acknowledge_alert(alert_id: str):
 
 
 # ========================================
-# REPLENISHMENT ORDERS
-# ========================================
-
-@router.get("/replenishment-orders")
-async def get_replenishment_orders():
-    """Get pending replenishment orders"""
-    orders = decision_service.get_pending_replenishment_orders()
-    return {"orders": orders, "count": len(orders)}
-
-
-@router.post("/replenishment-orders/{order_id}/approve")
-async def approve_replenishment_order(order_id: str):
-    """Approve a replenishment order"""
-    result = decision_service.approve_replenishment_order(order_id)
-    if not result.get("success"):
-        raise HTTPException(status_code=404, detail=result.get("error", "Order not found"))
-    return result
-
-
-# ========================================
-# SCHEDULER ENDPOINTS
-# ========================================
-
-@router.get("/scheduler/status")
-async def get_scheduler_status():
-    """Get scheduler status and job information"""
-    return scheduler_service.get_status()
-
-
-@router.post("/scheduler/start")
-async def start_scheduler():
-    """Start the background scheduler"""
-    scheduler_service.start()
-    return {"message": "Scheduler started", "status": scheduler_service.get_status()}
-
-
-@router.post("/scheduler/stop")
-async def stop_scheduler():
-    """Stop the background scheduler"""
-    scheduler_service.stop()
-    return {"message": "Scheduler stopped", "status": scheduler_service.get_status()}
-
-
-@router.post("/scheduler/pause")
-async def pause_scheduler():
-    """Pause all scheduled jobs"""
-    scheduler_service.pause()
-    return {"message": "Scheduler paused"}
-
-
-@router.post("/scheduler/resume")
-async def resume_scheduler():
-    """Resume all scheduled jobs"""
-    scheduler_service.resume()
-    return {"message": "Scheduler resumed"}
-
-
-@router.get("/scheduler/jobs")
-async def get_scheduler_jobs():
-    """Get all scheduled jobs"""
-    return {"jobs": scheduler_service.get_all_jobs()}
-
-
-@router.get("/scheduler/jobs/{job_id}")
-async def get_job_info(job_id: str):
-    """Get information about a specific job"""
-    job = scheduler_service.get_job_info(job_id)
-    if not job:
-        raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
-    return job
-
-
-@router.post("/scheduler/jobs/{job_id}/run")
-async def run_job_now(job_id: str):
-    """Run a specific job immediately"""
-    result = scheduler_service.run_job_now(job_id)
-    if not result.get("success"):
-        raise HTTPException(status_code=400, detail=result.get("error", "Job execution failed"))
-    return result
-
-
-@router.post("/scheduler/jobs/{job_id}/pause")
-async def pause_job(job_id: str):
-    """Pause a specific job"""
-    scheduler_service.pause_job(job_id)
-    return {"message": f"Job {job_id} paused"}
-
-
-@router.post("/scheduler/jobs/{job_id}/resume")
-async def resume_job(job_id: str):
-    """Resume a specific job"""
-    scheduler_service.resume_job(job_id)
-    return {"message": f"Job {job_id} resumed"}
-
-
-# ========================================
 # EVENT LOGS
 # ========================================
 
@@ -388,22 +409,4 @@ async def setup_collections():
     raise HTTPException(status_code=500, detail="Failed to setup collections")
 
 
-@router.get("/health")
-async def intelligence_health():
-    """Health check for intelligence layer"""
-    collections_status = verify_collections()
-    scheduler_status = scheduler_service.get_status()
-    signal_stats = signal_service.get_signal_stats()
-    
-    return {
-        "status": "healthy",
-        "collections": collections_status,
-        "scheduler": {
-            "is_running": scheduler_status["is_running"],
-            "job_count": scheduler_status["job_count"]
-        },
-        "signals": {
-            "active": signal_stats.get("active_signals", 0),
-            "total": signal_stats.get("total_signals", 0)
-        }
-    }
+

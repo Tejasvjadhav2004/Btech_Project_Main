@@ -28,14 +28,19 @@ const Intelligence = () => {
         getSignalStats(),
         getSchedulerStatus(),
         getActiveSignals(),
-        getReplenishmentOrders()
+        getReplenishmentOrders().catch(() => ({ orders: [] })) // Handle replenishment orders gracefully
       ]);
       setStats(statsData);
       setScheduler(schedulerData);
       setActiveSignals(signalsData?.signals || []);
       setReplenishmentOrders(replenishmentData?.orders || []);
     } catch (e) {
-      console.error(e);
+      console.error("Error fetching intelligence data:", e);
+      // Set fallback data to prevent empty displays
+      setStats(statsData || { active_signals: 0, total_signals: 0 });
+      setScheduler(schedulerData || { is_running: false, job_count: 0 });
+      setActiveSignals([]);
+      setReplenishmentOrders([]);
     }
     setLoading(false);
   };
@@ -52,6 +57,20 @@ const Intelligence = () => {
     } catch (e) {
       alert(`Error running detection: ${e.message}`);
     }
+  };
+
+  const getSignalTypeLabel = (type) => {
+    const labels = {
+      'LOW_STOCK': 'Low Stock',
+      'STOCKOUT': 'Stockout',
+      'DELIVERY_DELAY': 'Delivery Delay',
+      'DEMAND_SPIKE': 'Demand Spike',
+      'DEMAND_DROP': 'Demand Drop',
+      'OVERSTOCK': 'Overstock',
+      'OVER_UTILIZATION': 'Over Utilization',
+      'UNDER_UTILIZATION': 'Under Utilization'
+    };
+    return labels[type] || type;
   };
 
   const handleRunAll = async () => {
@@ -112,11 +131,14 @@ const Intelligence = () => {
   ].filter(d => d.value > 0);
 
   const signalTypeData = [
-    { name: 'Low Stock', value: activeSignals.filter(s => s.type === 'low-stock').length },
-    { name: 'Stockout', value: activeSignals.filter(s => s.type === 'stockout').length },
-    { name: 'Delivery Delay', value: activeSignals.filter(s => s.type === 'delivery-delay').length },
-    { name: 'Demand Spike', value: activeSignals.filter(s => s.type === 'demand-spike').length },
-    { name: 'Utilization', value: activeSignals.filter(s => s.type === 'utilization').length }
+    { name: 'Low Stock', value: activeSignals.filter(s => s.type === 'LOW_STOCK').length },
+    { name: 'Stockout', value: activeSignals.filter(s => s.type === 'STOCKOUT').length },
+    { name: 'Delivery Delay', value: activeSignals.filter(s => s.type === 'DELIVERY_DELAY').length },
+    { name: 'Demand Spike', value: activeSignals.filter(s => s.type === 'DEMAND_SPIKE').length },
+    { name: 'Demand Drop', value: activeSignals.filter(s => s.type === 'DEMAND_DROP').length },
+    { name: 'Overstock', value: activeSignals.filter(s => s.type === 'OVERSTOCK').length },
+    { name: 'Over Utilization', value: activeSignals.filter(s => s.type === 'OVER_UTILIZATION').length },
+    { name: 'Under Utilization', value: activeSignals.filter(s => s.type === 'UNDER_UTILIZATION').length }
   ].filter(d => d.value > 0);
 
   return (
@@ -205,24 +227,24 @@ const Intelligence = () => {
           {activeSignals.length === 0 ? (
             <p style={{ color: '#64748b' }}>No active signals detected.</p>
           ) : (
-             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-               {activeSignals.map(sig => (
-                 <div key={sig.signal_id} style={{ borderLeft: `4px solid ${severityColor(sig.severity)}`, padding: '15px', backgroundColor: '#f8fafc', borderRadius: '4px' }}>
-                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                     <div>
-                       <strong style={{ fontSize: '16px' }}>{sig.type}</strong>
-                       <span style={{ marginLeft: '10px', fontSize: '12px', padding: '2px 6px', background: severityColor(sig.severity), color: 'white', borderRadius: '10px' }}>{sig.severity}</span>
-                     </div>
-                     <div style={{ display: 'flex', gap: '10px' }}>
-                       <button onClick={() => handleSignalAction(sig.signal_id, 'ack')} style={{ padding: '4px 10px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Acknowledge</button>
-                       <button onClick={() => handleSignalAction(sig.signal_id, 'resolve')} style={{ padding: '4px 10px', background: '#22c55e', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Resolve</button>
-                     </div>
-                   </div>
-                   <p style={{ margin: 0, fontSize: '14px', color: '#475569' }}>{sig.message}</p>
-                   {sig.entity_id && <p style={{ margin: '5px 0 0', fontSize: '12px', color: '#94a3b8' }}>Entity: {sig.entity_id}</p>}
-                 </div>
-               ))}
-             </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {activeSignals.map(sig => (
+                  <div key={sig.signal_id} style={{ borderLeft: `4px solid ${severityColor(sig.severity)}`, padding: '15px', backgroundColor: '#f8fafc', borderRadius: '4px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                      <div>
+                        <strong style={{ fontSize: '16px' }}>{getSignalTypeLabel(sig.type)}</strong>
+                        <span style={{ marginLeft: '10px', fontSize: '12px', padding: '2px 6px', background: severityColor(sig.severity), color: 'white', borderRadius: '10px' }}>{sig.severity}</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        <button onClick={() => handleSignalAction(sig.signal_id, 'ack')} style={{ padding: '4px 10px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Acknowledge</button>
+                        <button onClick={() => handleSignalAction(sig.signal_id, 'resolve')} style={{ padding: '4px 10px', background: '#22c55e', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Resolve</button>
+                      </div>
+                    </div>
+                    <p style={{ margin: 0, fontSize: '14px', color: '#475569' }}>{sig.message}</p>
+                    {sig.entity_id && <p style={{ margin: '5px 0 0', fontSize: '12px', color: '#94a3b8' }}>Entity: {sig.entity_id}</p>}
+                  </div>
+                ))}
+              </div>
           )}
         </div>
 

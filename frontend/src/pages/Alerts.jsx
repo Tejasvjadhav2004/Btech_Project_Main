@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getAlerts } from '../services/api';
+import { getActiveSignals } from '../services/api';
 import { usePolling } from '../hooks/usePolling';
 
 const Alerts = () => {
@@ -7,9 +7,9 @@ const Alerts = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchAlerts = () => {
-    getAlerts()
+    getActiveSignals()
       .then(res => {
-        setAlerts(res.alerts || []);
+        setAlerts(res.signals || []);
         setLoading(false);
       })
       .catch(err => {
@@ -24,7 +24,7 @@ const Alerts = () => {
 
   usePolling(() => {
     fetchAlerts();
-  }, 5000);
+  }, 600000);
 
   const getAlertColor = (severity) => {
     switch (severity?.toLowerCase()) {
@@ -35,6 +35,20 @@ const Alerts = () => {
     }
   };
 
+  const getSignalTypeLabel = (type) => {
+    const labels = {
+      'LOW_STOCK': 'Low Stock',
+      'STOCKOUT': 'Stockout',
+      'DELIVERY_DELAY': 'Delivery Delay',
+      'DEMAND_SPIKE': 'Demand Spike',
+      'DEMAND_DROP': 'Demand Drop',
+      'OVERSTOCK': 'Overstock',
+      'OVER_UTILIZATION': 'Over Utilization',
+      'UNDER_UTILIZATION': 'Under Utilization'
+    };
+    return labels[type] || type;
+  };
+
   if (loading && alerts.length === 0) return <div>Loading alerts...</div>;
 
   return (
@@ -42,7 +56,7 @@ const Alerts = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h1 style={{ color: '#0f172a', margin: 0 }}>System Alerts</h1>
         <span style={{ backgroundColor: '#e2e8f0', padding: '5px 15px', borderRadius: '20px', fontSize: '14px' }}>
-          Auto-refreshing (5s) • {alerts.length} Active
+          Auto-refreshing (10 min) • {alerts.length} Active Signals
         </span>
       </div>
 
@@ -76,9 +90,9 @@ const Alerts = () => {
                   }}>
                     {alert.severity}
                   </span>
-                  <h3 style={{ margin: 0, color: '#1e293b' }}>{alert.title}</h3>
+                  <h3 style={{ margin: 0, color: '#1e293b' }}>{getSignalTypeLabel(alert.type)}</h3>
                 </div>
-                <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>{alert.description}</p>
+                <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>{alert.message}</p>
                 {alert.entity_id && (
                   <p style={{ margin: '5px 0 0', color: '#94a3b8', fontSize: '12px' }}>Entity ID: {alert.entity_id}</p>
                 )}

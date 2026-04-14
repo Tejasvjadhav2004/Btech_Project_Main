@@ -21,7 +21,7 @@ const Inventory = () => {
           const inventoryRecord = inventoryRes.find(inv => inv.sku === product.sku);
           return {
             ...product,
-            stockLevel: inventoryRecord?.stock || 0,
+            stockLevel: inventoryRecord?.quantity || 0,
             warehouse: inventoryRecord?.location_id || (product.warehouse || 'Unknown'),
             locationType: inventoryRecord?.location_type || 'warehouse'
           };
@@ -70,9 +70,9 @@ const Inventory = () => {
     if (item.location_type === 'warehouse') {
       const existing = acc.find(d => d.name === item.location_id);
       if (existing) {
-        existing.stock += item.stock || 0;
+        existing.stock += item.quantity || 0;
       } else {
-        acc.push({ name: item.location_id, stock: item.stock || 0 });
+        acc.push({ name: item.location_id, stock: item.quantity || 0 });
       }
     }
     return acc;
