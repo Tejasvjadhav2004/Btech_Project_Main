@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getDeliveries, startDelivery, completeDelivery } from '../services/api';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 const Deliveries = () => {
   const [deliveries, setDeliveries] = useState([]);
@@ -45,6 +46,21 @@ const Deliveries = () => {
     }
   };
 
+  // Prepare data for charts
+  const deliveryStatusData = [
+    { name: 'Pending', value: deliveries.filter(d => d.status === 'pending').length, color: '#f59e0b' },
+    { name: 'In Transit', value: deliveries.filter(d => d.status === 'in_transit').length, color: '#3b82f6' },
+    { name: 'Delivered', value: deliveries.filter(d => d.status === 'delivered').length, color: '#22c55e' },
+    { name: 'Failed', value: deliveries.filter(d => d.status === 'failed').length, color: '#ef4444' },
+    { name: 'Cancelled', value: deliveries.filter(d => d.status === 'cancelled').length, color: '#6b7280' }
+  ].filter(d => d.value > 0);
+
+  const deliveryDistanceData = deliveries.slice(-10).map((delivery, index) => ({
+    name: `Delivery ${index + 1}`,
+    distance: delivery.distance_km || 0,
+    duration: delivery.estimated_duration_hours || 0
+  }));
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -52,6 +68,47 @@ const Deliveries = () => {
         <button onClick={fetchDeliveriesList} style={{ padding: '8px 16px', background: 'white', border: '1px solid #cbd5e1', borderRadius: '5px', cursor: 'pointer' }}>
           🔄 Refresh
         </button>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+          <h3 style={{ marginTop: 0, color: '#334155', marginBottom: '15px' }}>Delivery Status Distribution</h3>
+          <ResponsiveContainer width="100%" height={250}>
+            <PieChart>
+              <Pie
+                data={deliveryStatusData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {deliveryStatusData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+          <h3 style={{ marginTop: 0, color: '#334155', marginBottom: '15px' }}>Distance & Duration Analysis</h3>
+          <ResponsiveContainer width="100%" height={250}>
+            <AreaChart data={deliveryDistanceData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis yAxisId="left" />
+              <YAxis yAxisId="right" orientation="right" />
+              <Tooltip />
+              <Legend />
+              <Area yAxisId="left" type="monotone" dataKey="distance" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} name="Distance (km)" />
+              <Area yAxisId="right" type="monotone" dataKey="duration" stroke="#10b981" fill="#10b981" fillOpacity={0.6} name="Duration (h)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       <div style={{ display: 'flex', gap: '20px', marginBottom: '20px', backgroundColor: 'white', padding: '15px', borderRadius: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>

@@ -1,41 +1,149 @@
 import React, { useEffect, useState } from 'react';
-import { getDashboardOverview } from '../services/api';
+import { getDashboardOverview, getDashboardProductStock, getDashboardWarehouseStock, getDashboardStoreStock, getDashboardLowStock, getDashboardMetrics } from '../services/api';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const Dashboard = () => {
-  const [data, setData] = useState(null);
+  const [overview, setOverview] = useState(null);
+  const [productStock, setProductStock] = useState([]);
+  const [warehouseStock, setWarehouseStock] = useState([]);
+  const [storeStock, setStoreStock] = useState([]);
+  const [lowStock, setLowStock] = useState([]);
+  const [metrics, setMetrics] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getDashboardOverview()
-      .then(res => {
-        setData(res);
+    const fetchAllData = async () => {
+      try {
+        const [overviewData, productStockData, warehouseStockData, storeStockData, lowStockData, metricsData] = await Promise.all([
+          getDashboardOverview(),
+          getDashboardProductStock(),
+          getDashboardWarehouseStock(),
+          getDashboardStoreStock(),
+          getDashboardLowStock(),
+          getDashboardMetrics()
+        ]);
+        setOverview(overviewData);
+        setProductStock(Array.isArray(productStockData) ? productStockData : []);
+        setWarehouseStock(Array.isArray(warehouseStockData) ? warehouseStockData : []);
+        setStoreStock(Array.isArray(storeStockData) ? storeStockData : []);
+        setLowStock(Array.isArray(lowStockData) ? lowStockData : []);
+        setMetrics(metricsData || {});
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+      } finally {
         setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
+      }
+    };
+
+    fetchAllData();
   }, []);
 
   if (loading) return <div>Loading dashboard...</div>;
-  if (!data) return <div>Error loading dashboard data.</div>;
+  if (!overview) return <div>Error loading dashboard data.</div>;
+
+  // Prepare data for charts using real API data
+  // Stock distribution by category - using product stock data
+  const categoryData = productStock.reduce((acc, item) => {
+    const existing = acc.find(d => d.name === (item.category || 'Other'));
+    if (existing) {
+      existing.value += item.stock || 0;
+    } else {
+      acc.push({ name: item.category || 'Other', value: item.stock || 0, color: getColorForCategory(item.category) });
+    }
+    return acc;
+  }, []).slice(0, 6);
+
+  // Top 10 products by revenue - using product stock data (assuming stock correlates with demand)
+  const topProductsData = productStock
+    .sort((a, b) => (b.stock || 0) - (a.stock || 0))
+    .slice(0, 10)
+    .map(item => ({
+      name: (item.product_name || item.sku || 'Unknown').substring(0, 20),
+      revenue: (item.stock || 0) * 10 // Assuming $10 per unit as placeholder
+    }));
+
+  // Warehouse utilization and stock
+  const warehouseData = warehouseStock.map(wh => ({
+    name: wh.warehouse_id || wh.name || 'Unknown',
+    utilization: wh.utilization || 0,
+    stock: wh.stock || 0
+  }));
+
+  function getColorForCategory(category) {
+    const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+    const index = Math.abs((category || '').length) % colors.length;
+    return colors[index];
+  }
 
   return (
     <div>
       <h1 style={{ color: '#0f172a', marginBottom: '20px' }}>Dashboard Overview</h1>
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '30px' }}>
-        <Card title="Total Products" value={data.total_products} />
-        <Card title="Total Stock" value={data.total_stock} />
-        <Card title="Low Stock Alerts" value={data.low_stock_alerts} color={data.low_stock_alerts > 0 ? '#ef4444' : '#22c55e'} />
-        <Card title="Warehouse Utilization" value={`${(data.warehouse_utilization || 0).toFixed(1)}%`} />
+        <Card title="Total Products" value={overview.total_products || 0} />
+        <Card title="Total Stock" value={overview.total_stock || 0} />
+        <Card title="Low Stock Alerts" value={overview.low_stock_alerts || 0} color={(overview.low_stock_alerts || 0) > 0 ? '#ef4444' : '#22c55e'} />
+        <Card title="Warehouse Utilization" value={`${(overview.warehouse_utilization || 0).toFixed(1)}%`} />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
         <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-          <h3 style={{ marginTop: 0, color: '#334155' }}>Recent Activity</h3>
-          <p style={{ color: '#64748b' }}>Total Revenue: ${data.total_revenue?.toLocaleString()}</p>
+          <h3 style={{ marginTop: 0, color: '#334155' }}>Stock Distribution by Category</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={categoryData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                outerRadius={100}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {categoryData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
+
+        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+          <h3 style={{ marginTop: 0, color: '#334155' }}>Top 10 Products by Revenue</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={topProductsData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+              <Legend />
+              <Bar dataKey="revenue" fill="#3b82f6" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', marginBottom: '30px' }}>
+        <h3 style={{ marginTop: 0, color: '#334155' }}>Warehouse Utilization & Stock Levels</h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={warehouseData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis yAxisId="left" />
+            <YAxis yAxisId="right" orientation="right" />
+            <Tooltip />
+            <Legend />
+            <Bar yAxisId="left" dataKey="utilization" fill="#10b981" name="Utilization %" />
+            <Bar yAxisId="right" dataKey="stock" fill="#3b82f6" name="Stock Units" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+        <h3 style={{ marginTop: 0, color: '#334155' }}>Recent Activity</h3>
+        <p style={{ color: '#64748b', fontSize: '18px' }}>Total Revenue: <strong style={{ color: '#0f172a' }}>${overview.total_revenue?.toLocaleString() || '0'}</strong></p>
       </div>
     </div>
   );

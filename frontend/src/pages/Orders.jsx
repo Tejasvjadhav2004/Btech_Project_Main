@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchOrders, triggerOrder } from '../services/api';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -43,9 +44,70 @@ const Orders = () => {
       .finally(() => setOrderLoad(false));
   };
 
+  // Prepare data for charts
+  const getStatusColor = (status) => {
+    switch(status?.toLowerCase()) {
+      case 'pending': return '#fef3c7';
+      case 'delivered': return '#dcfce3';
+      case 'shipped': return '#e0e7ff';
+      default: return '#f1f5f9';
+    }
+  };
+
+  const orderStatusData = [
+    { name: 'Pending', value: orders.filter(o => o.status === 'pending').length, color: '#f59e0b' },
+    { name: 'Delivered', value: orders.filter(o => o.status === 'delivered').length, color: '#22c55e' },
+    { name: 'Shipped', value: orders.filter(o => o.status === 'shipped').length, color: '#3b82f6' },
+    { name: 'Other', value: orders.filter(o => !['pending', 'delivered', 'shipped'].includes(o.status)).length, color: '#6b7280' }
+  ].filter(d => d.value > 0);
+
+  const orderAmountData = orders.slice(-10).map((order, index) => ({
+    name: `Order ${index + 1}`,
+    amount: order.total_amount || 0
+  }));
+
   return (
     <div>
       <h1 style={{ color: '#0f172a', marginBottom: '20px' }}>Orders Management</h1>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
+        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+          <h3 style={{ marginTop: 0, color: '#334155', marginBottom: '15px' }}>Order Status Distribution</h3>
+          <ResponsiveContainer width="100%" height={250}>
+            <PieChart>
+              <Pie
+                data={orderStatusData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {orderStatusData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+          <h3 style={{ marginTop: 0, color: '#334155', marginBottom: '15px' }}>Recent Order Amounts</h3>
+          <ResponsiveContainer width="100%" height={250}>
+            <LineChart data={orderAmountData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+              <Legend />
+              <Line type="monotone" dataKey="amount" stroke="#3b82f6" strokeWidth={2} name="Amount" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
 
       <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '10px', marginBottom: '30px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
         <h3 style={{ marginTop: 0, color: '#334155' }}>Create New Order</h3>

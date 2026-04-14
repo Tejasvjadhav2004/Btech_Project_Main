@@ -18,6 +18,16 @@ export const getProductsList = async () => {
   return response.data;
 };
 
+// Get detailed inventory data with stock levels
+export const getInventoryWithStock = async () => {
+  try {
+    const response = await api.get('/api/inventory?limit=500');
+    return response.data;
+  } catch (e) {
+    return [];
+  }
+};
+
 // Assuming there is a forecast endpoint based on requirements
 export const getForecast = async () => {
   try {
@@ -56,6 +66,52 @@ export const getLogs = async () => {
 export const getDashboardOverview = async () => {
   const response = await api.get('/api/dashboard/overview');
   return response.data;
+};
+
+// Additional dashboard endpoints for detailed analytics
+export const getDashboardProductStock = async () => {
+  try {
+    const response = await api.get('/api/dashboard/product-stock');
+    return response.data;
+  } catch (e) {
+    return [];
+  }
+};
+
+export const getDashboardWarehouseStock = async () => {
+  try {
+    const response = await api.get('/api/dashboard/warehouse-stock');
+    return response.data;
+  } catch (e) {
+    return [];
+  }
+};
+
+export const getDashboardStoreStock = async () => {
+  try {
+    const response = await api.get('/api/dashboard/store-stock');
+    return response.data;
+  } catch (e) {
+    return [];
+  }
+};
+
+export const getDashboardLowStock = async () => {
+  try {
+    const response = await api.get('/api/dashboard/low-stock');
+    return response.data;
+  } catch (e) {
+    return [];
+  }
+};
+
+export const getDashboardMetrics = async () => {
+  try {
+    const response = await api.get('/api/dashboard/metrics');
+    return response.data;
+  } catch (e) {
+    return {};
+  }
 };
 
 // Intelligence Endpoints
