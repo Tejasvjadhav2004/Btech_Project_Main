@@ -12,6 +12,7 @@ import {
   getReplenishmentOrders,
   approveReplenishmentOrder
 } from '../services/api';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const Intelligence = () => {
   const [stats, setStats] = useState(null);
@@ -102,6 +103,22 @@ const Intelligence = () => {
     }
   };
 
+  // Prepare data for charts
+  const severityData = [
+    { name: 'Critical', value: activeSignals.filter(s => s.severity === 'critical').length, color: '#ef4444' },
+    { name: 'High', value: activeSignals.filter(s => s.severity === 'high').length, color: '#f97316' },
+    { name: 'Medium', value: activeSignals.filter(s => s.severity === 'medium').length, color: '#eab308' },
+    { name: 'Low', value: activeSignals.filter(s => s.severity === 'low').length, color: '#22c55e' }
+  ].filter(d => d.value > 0);
+
+  const signalTypeData = [
+    { name: 'Low Stock', value: activeSignals.filter(s => s.type === 'low-stock').length },
+    { name: 'Stockout', value: activeSignals.filter(s => s.type === 'stockout').length },
+    { name: 'Delivery Delay', value: activeSignals.filter(s => s.type === 'delivery-delay').length },
+    { name: 'Demand Spike', value: activeSignals.filter(s => s.type === 'demand-spike').length },
+    { name: 'Utilization', value: activeSignals.filter(s => s.type === 'utilization').length }
+  ].filter(d => d.value > 0);
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -141,7 +158,50 @@ const Intelligence = () => {
 
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px' }}>
         <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-          <h3 style={{ marginTop: 0, color: '#334155' }}>Active Signals</h3>
+          <h3 style={{ marginTop: 0, color: '#334155' }}>Signal Analytics</h3>
+          
+          {activeSignals.length > 0 && (
+            <>
+              <div style={{ marginBottom: '30px' }}>
+                <h4 style={{ color: '#64748b', marginBottom: '15px' }}>Signals by Severity</h4>
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={severityData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {severityData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div style={{ marginBottom: '30px' }}>
+                <h4 style={{ color: '#64748b', marginBottom: '15px' }}>Signals by Type</h4>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={signalTypeData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="value" fill="#3b82f6" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </>
+          )}
+
+          <h3 style={{ marginTop: 0, color: '#334155', marginBottom: '15px' }}>Active Signals</h3>
           {activeSignals.length === 0 ? (
             <p style={{ color: '#64748b' }}>No active signals detected.</p>
           ) : (

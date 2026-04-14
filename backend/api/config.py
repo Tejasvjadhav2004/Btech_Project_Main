@@ -3,6 +3,7 @@ Configuration settings for the Supply Chain Management API
 """
 from pydantic_settings import BaseSettings
 from typing import List, Optional
+from pathlib import Path
 import os
 
 
@@ -20,11 +21,11 @@ class Settings(BaseSettings):
     
     # Dashboard Configuration
     dashboard_host: str = "localhost"
-    dashboard_port: int = 8501
+    dashboard_port: int = 5173
     
     # Data Configuration
-    supply_chain_data_path: str = "../data/raw/supply_chain_data.csv"
-    fashion_boutique_data_path: str = "../data/raw/fashion_boutique_dataset.csv"
+    supply_chain_data_path: str = os.path.join("data", "raw", "supply_chain_data.csv")
+    fashion_boutique_data_path: str = os.path.join("data", "raw", "fashion_boutique_dataset.csv")
     
     # Monitoring Configuration
     low_stock_threshold: int = 10

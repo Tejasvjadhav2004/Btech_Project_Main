@@ -129,9 +129,9 @@ class AnalyticsService:
             {
                 "$project": {
                     "category": "$_id",
-                    "total_quantity": 1,
-                    "total_revenue": 1,
-                    "average_price": 1
+                    "total_quantity": "$total_quantity",
+                    "total_revenue": "$total_revenue",
+                    "average_price": "$average_price"
                 }
             }
         ]

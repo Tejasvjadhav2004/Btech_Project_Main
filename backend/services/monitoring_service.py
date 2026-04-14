@@ -51,7 +51,7 @@ class MonitoringService:
                 "$project": {
                     "location_id": "$_id.location_id",
                     "location_type": "$_id.location_type",
-                    "quantity": 1
+                    "quantity": "$quantity"
                 }
             }
         ]
@@ -142,7 +142,7 @@ class MonitoringService:
             {
                 "$project": {
                     "category": "$_id",
-                    "total_quantity": 1
+                    "total_quantity": "$total_quantity"
                 }
             }
         ]
