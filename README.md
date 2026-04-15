@@ -1,470 +1,257 @@
-# Supply Chain Management System - Phase 1
+# Supply Chain Management System 
 
-## Industry Initialization + Monitoring System
+A comprehensive Supply Chain Management (SCM) system built with Python, MongoDB, FastAPI, and React. This system serves as the foundation for a multi-agent AI orchestration platform, designed to be scalable and production-ready with advanced sensing and intelligence capabilities.
 
-A comprehensive Supply Chain Management (SCM) system built with Python, MongoDB, FastAPI, and Streamlit. This system serves as the foundation for a multi-agent AI orchestration platform, designed to be scalable and production-ready.
+## 🎯Objectives
 
-## 🎯 Phase 1 Objectives
-
-Phase 1 focuses on building the core infrastructure and monitoring capabilities:
-
-- ✅ Initialize multi-warehouse + multi-store system
-- ✅ Load and transform real datasets (fashion + supply chain)
-- ✅ Store data in MongoDB with optimized schemas
-- ✅ Provide backend APIs using FastAPI
-- ✅ Build interactive monitoring dashboard with Streamlit
-- ✅ Implement order simulation and inventory tracking
-- ✅ Design for future AI/agent layer integration
+✅ Initialize multi-warehouse + multi-store system  
+✅ Load and transform real datasets (fashion + supply chain)  
+✅ Store data in MongoDB with optimized schemas  
+✅ Provide backend APIs using FastAPI  
+✅ Build interactive monitoring dashboard with React  
+✅ Implement order simulation and inventory tracking  
+✅ Design for future AI/agent layer integration  
+✅ **NEW: Implement intelligence layer with signal detection**  
+✅ **NEW: Add automated monitoring and alerting system**  
+✅ **NEW: Implement forecasting capabilities**  
+✅ **NEW: Add delivery management and tracking**  
 
 ## 🏗️ System Architecture
 
 ```
-┌─────────────────┐
-│   CSV Datasets  │
-│  (Fashion + SCM)│
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Data Transform  │
-│    Pipeline     │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│    MongoDB      │
-│   (7 Collections)│
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│    FastAPI      │
-│   (REST APIs)   │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Monitoring      │
-│    Engine       │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Streamlit      │
-│   Dashboard     │
-└─────────────────┘
+CSV Datasets → Data Transform → MongoDB → FastAPI → Monitoring Engine → React Dashboard
+                                         ↓
+                              Intelligence Layer
+                                         ↓
+                              Signal Detection & Alerts
 ```
 
 ## 📁 Project Structure
 
 ```
 supply-chain-management/
-│
-├── backend/                      # Backend application
-│   ├── myenv310/                 # Python virtual environment
-│   ├── .env.example              # Environment variable template
-│   ├── requirements.txt          # Python dependencies
-│   ├── api/                      # FastAPI application
-│   │   ├── __init__.py
-│   │   ├── main.py               # FastAPI app entry point
-│   │   ├── config.py             # Application settings
-│   │   ├── models/               # Pydantic models
-│   │   │   ├── __init__.py
-│   │   │   ├── product.py
-│   │   │   ├── warehouse.py
-│   │   │   ├── store.py
-│   │   │   ├── inventory.py
-│   │   │   ├── supplier.py
-│   │   │   └── order.py
-│   │   └── routers/              # API route handlers
-│   │       ├── __init__.py
-│   │       ├── products.py
-│   │       ├── warehouses.py
-│   │       ├── stores.py
-│   │       ├── inventory.py
-│   │       ├── dashboard.py
-│   │       └── orders.py
-│   │
-│   ├── db/                       # Database layer
-│   │   ├── __init__.py
-│   │   └── connection.py         # MongoDB connection manager
-│   │
-│   ├── services/                 # Business logic layer
-│   │   ├── __init__.py
-│   │   ├── monitoring_service.py # Stock monitoring & KPIs
-│   │   ├── order_service.py      # Order management
-│   │   ├── inventory_service.py  # Inventory operations
-│   │   └── analytics_service.py  # Advanced analytics
-│   │
-│   ├── scripts/                  # Data processing scripts
-│   │   ├── data_loader.py        # CSV data loading
-│   │   ├── data_transformer.py   # Data transformation
-│   │   ├── data_generator.py     # Synthetic data generation
-│   │   ├── mongo_initializer.py  # MongoDB initialization
-│   │   └── seed_data.py          # Main seeding script
-│   │
-│   ├── dashboard/                # Streamlit dashboard
-│   │   ├── __init__.py
-│   │   └── app.py                # Dashboard application
-│   │
-│   └── tests/                    # Test files
-│       └── test_intelligence.py
-│
-├── frontend/                     # Frontend application
+├── backend/
+│   ├── api/                    # FastAPI application
+│   │   ├── main.py            # FastAPI app entry point
+│   │   ├── config.py          # Application settings
+│   │   ├── models/            # Pydantic models
+│   │   └── routers/           # API route handlers
+│   │       ├── products.py    # Product endpoints
+│   │       ├── warehouses.py  # Warehouse endpoints
+│   │       ├── stores.py      # Store endpoints
+│   │       ├── inventory.py   # Inventory endpoints
+│   │       ├── dashboard.py   # Dashboard endpoints
+│   │       ├── orders.py      # Order endpoints
+│   │       ├── deliveries.py  # Delivery endpoints
+│   │       ├── signals.py     # Signal detection endpoints
+│   │       └── forecast.py    # Forecasting endpoints
+│   ├── db/                    # Database layer
+│   │   ├── connection.py      # MongoDB connection manager
+│   │   └── collections.py     # Intelligence collections setup
+│   ├── services/              # Business logic layer
+│   │   ├── monitoring_service.py
+│   │   ├── order_service.py
+│   │   ├── inventory_service.py
+│   │   ├── analytics_service.py
+│   │   ├── decision_service.py
+│   │   ├── delivery_service.py
+│   │   ├── execution_logger.py
+│   │   └── scheduler_service.py
+│   ├── scripts/               # Data processing scripts
+│   │   ├── data_loader.py
+│   │   ├── data_transformer.py
+│   │   ├── data_generator.py
+│   │   ├── mongo_initializer.py
+│   │   ├── seed_data.py
+│   │   └── example_scenario.py
+│   ├── data/                  # CSV datasets
+│   │   ├── raw/
+│   │   │   ├── supply_chain_data.csv
+│   │   │   └── fashion_boutique_dataset.csv
+│   ├── requirements.txt
+│   └── .env.example
+├── frontend/                  # React frontend application
 │   ├── src/
+│   │   ├── pages/            # React pages
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── Inventory.jsx
+│   │   │   ├── Alerts.jsx
+│   │   │   ├── Intelligence.jsx
+│   │   │   ├── Orders.jsx
+│   │   │   ├── Deliveries.jsx
+│   │   │   ├── Forecast.jsx
+│   │   │   ├── Logs.jsx
+│   │   │   ├── Warehouses.jsx
+│   │   │   └── Stores.jsx
+│   │   ├── services/         # API service layer
+│   │   │   └── api.js
+│   │   ├── components/       # Reusable components
+│   │   │   ├── Layout.jsx
+│   │   │   └── Sidebar.jsx
+│   │   └── hooks/            # Custom React hooks
+│   │       └── usePolling.js
 │   ├── public/
-│   └── package.json
-│
-├── data/                         # Data files
-│   ├── supply_chain_data.csv     # Supply chain dataset
-│   └── fashion_boutique_dataset.csv  # Fashion dataset
-│
-├── plans/                        # Documentation
-│   └── phase1_architect_plan.md  # Architect plan
-│
-└── README.md                     # This file
+│   ├── package.json
+│   └── vite.config.js
+└── README.md
 ```
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-
 - Python 3.9 or higher
 - MongoDB Atlas account with a configured cluster
+- Node.js 16+ and npm for React frontend
 
 ### Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd supply-chain-management
-   ```
-
-2. **Activate virtual environment**
-   ```bash
-   # On Windows
-   backend\myenv310\Scripts\activate
-   
-   # On macOS/Linux
-   source backend/myenv310/bin/activate
-   ```
-
-3. **Install dependencies**
-   ```bash
-   pip install -r backend/requirements.txt
-   ```
-
-4. **Configure environment variables**
-   
-   Copy `backend/.env.example` to `backend/.env` and configure your MongoDB Atlas connection:
+1. **Configure MongoDB Atlas**
    ```bash
    cp backend/.env.example backend/.env
    ```
-   
-   Update the `.env` file with your MongoDB Atlas connection string:
+   Update `.env` with your MongoDB Atlas connection string:
    ```env
    MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/
    MONGODB_DATABASE_NAME=supply_chain_db
    ```
-   
-   Replace `<username>`, `<password>`, and `<cluster>` with your MongoDB Atlas credentials.
-   
-   All other settings use sensible defaults.
 
-5. **Seed the database**
-   
-   Place your CSV files in the `data/` directory:
+2. **Install backend dependencies**
+   ```bash
+   pip install -r backend/requirements.txt
+   ```
+
+3. **Place data files** in the `backend/data/raw/` directory:
    - `supply_chain_data.csv`
    - `fashion_boutique_dataset.csv`
-   
-   Then run:
+
+4. **Seed the database**
    ```bash
    python backend/scripts/seed_data.py
    ```
-   
-   This will:
-   - Load and validate CSV data
-   - Transform data to MongoDB schema
-   - Generate 5 warehouses and 8 stores
-   - Generate inventory data (high stock for warehouses, low stock for stores)
-   - Create indexes for optimal performance
-   
-   Output:
-   - 100+ products from fashion dataset
-   - 5 warehouses in major Indian cities
-   - 8 stores across 8 cities
-   - Inventory with proper stock distribution
 
-6. **Start the FastAPI backend**
+5. **Start the applications**
+   
+   **Terminal 1 - FastAPI Backend:**
    ```bash
-   # Option 1: Using uvicorn directly
    uvicorn backend.api.main:app --reload
-   
-   # Option 2: Using python
-   python -m uvicorn backend.api.main:app --reload
    ```
    
-   The API will be available at:
-   - API: http://localhost:8000
-   - Interactive Docs: http://localhost:8000/docs
-   - Health Check: http://localhost:8000/health
-
-7. **Start the Streamlit dashboard**
-   
-   In a new terminal:
+   **Terminal 2 - React Frontend:**
    ```bash
-   streamlit run backend/dashboard/app.py
+   cd frontend
+   npm install
+   npm run dev
    ```
-   
-   The dashboard will be available at:
-   - Dashboard: http://localhost:8501
+
+### Access Your System
+- **API**: http://localhost:8000
+- **API Docs**: http://localhost:8000/docs
+- **Frontend**: http://localhost:3000
 
 ## 📊 API Endpoints
 
-### Core APIs
-
-#### Products
+### Core APIs (10 endpoints)
 - `GET /api/products` - List all products (with pagination)
 - `GET /api/products/{sku}` - Get product by SKU
-
-#### Warehouses
 - `GET /api/warehouses` - List all warehouses
 - `GET /api/warehouses/{warehouse_id}` - Get warehouse details
 - `GET /api/warehouses/{warehouse_id}/inventory` - Get warehouse inventory
-
-#### Stores
 - `GET /api/stores` - List all stores
 - `GET /api/stores/{store_id}` - Get store details
 - `GET /api/stores/{store_id}/inventory` - Get store inventory
-
-#### Inventory
 - `GET /api/inventory` - List all inventory items (with filters)
-  - Query params: `sku`, `location_id`, `location_type` (warehouse/store), `threshold`
+- `POST /api/orders` - Create new order
 
-### Dashboard APIs
-
+### Dashboard APIs (6 endpoints)
 - `GET /api/dashboard/overview` - System KPIs
-  ```json
-  {
-    "total_products": 100,
-    "total_stock": 15000,
-    "low_stock_alerts": 5,
-    "warehouse_utilization": 65.5,
-    "total_revenue": 250000.00
-  }
-  ```
-
 - `GET /api/dashboard/product-stock` - Stock distribution by product
 - `GET /api/dashboard/warehouse-stock` - Stock by warehouse
 - `GET /api/dashboard/store-stock` - Stock by store
-- `GET /api/dashboard/low-stock` - Low stock alerts (threshold query param)
+- `GET /api/dashboard/low-stock` - Low stock alerts
 - `GET /api/dashboard/metrics` - Detailed metrics with alerts
 
-### Order APIs
-
-- `POST /api/orders` - Create new order
-  ```json
-  {
-    "store_id": "STORE-001",
-    "items": [
-      {
-        "sku": "SKU-001",
-        "quantity": 5
-      }
-    ]
-  }
-  ```
-
+### Order APIs (3 endpoints)
 - `GET /api/orders/{order_id}` - Get order by ID
 - `GET /api/orders` - List orders (with filters)
-  - Query params: `store_id`, `status`, `limit`
 - `PUT /api/orders/{order_id}/status` - Update order status
 
-## 🎨 Dashboard Features
+### Delivery APIs (5 endpoints)
+- `GET /api/deliveries` - List all deliveries
+- `GET /api/deliveries/{delivery_id}` - Get delivery details
+- `POST /api/deliveries/{delivery_id}/start` - Start delivery
+- `POST /api/deliveries/{delivery_id}/complete` - Complete delivery
+- `GET /api/orders/executions/recent` - Get recent execution logs
 
-### Pages
+### Signal/Intelligence APIs (10+ endpoints)
+- `GET /api/signals/alerts` - Get all alerts
+- `GET /api/signals/stats` - Get signal statistics
+- `GET /api/signals/active` - Get active signals
+- `POST /api/signals/detect/{type}` - Run specific detection
+- `POST /api/signals/detect/all` - Run all detections
+- `GET /api/signals/scheduler/status` - Get scheduler status
+- `POST /api/signals/scheduler/start` - Start scheduler
+- `POST /api/signals/scheduler/stop` - Stop scheduler
+- `POST /api/signals/{signalId}/acknowledge` - Acknowledge signal
+- `POST /api/signals/{signalId}/resolve` - Resolve signal
+- `GET /api/signals/replenishment-orders` - Get replenishment orders
+- `POST /api/signals/replenishment-orders/{id}/approve` - Approve replenishment
 
-1. **Overview** 📊
-   - KPI cards (Total Products, Stock, Alerts, Utilization, Revenue)
-   - Stock distribution by category (pie chart)
-   - Top products by revenue (bar chart)
+### Forecasting APIs (2+ endpoints)
+- `GET /api/forecast` - Get demand forecast
+- `POST /api/forecast/generate` - Generate new forecast
 
-2. **Warehouses** 🏭
-   - Warehouse inventory table
-   - Utilization rate chart
-   - Stock by warehouse chart
+**Total: 35+ API endpoints**
 
-3. **Stores** 🏪
-   - Store inventory table
-   - Stock by store chart
+## 🎨 Frontend Features
 
-4. **Products** 📦
-   - Product catalog with filters (category, brand)
-   - Sales by product chart
+### React Pages (10 pages)
+1. **Dashboard** 📊 - KPI cards, stock distribution charts, top products, real-time metrics
+2. **Inventory** 📦 - Inventory management with tables, filters, and stock levels
+3. **Alerts** 🚨 - Low stock warnings with severity levels, signal acknowledgment
+4. **Intelligence** 🧠 - AI-powered insights, signal detection, scheduler control
+5. **Orders** 🛒 - Order management, creation, and tracking
+6. **Deliveries** 🚚 - Delivery tracking, status management
+7. **Forecast** 📈 - Demand forecasting and predictions
+8. **Logs** 📋 - Execution logs and system events
+9. **Warehouses** 🏭 - Warehouse inventory and utilization
+10. **Stores** 🏪 - Store inventory and performance
 
-5. **Alerts** 🚨
-   - Low stock alerts with severity (Critical/Warning)
-   - System alerts with expandable details
+### Key Features
+- **Real-time Updates**: Polling mechanism for live data
+- **Interactive Charts**: Visual analytics with Plotly
+- **Signal Management**: Alert acknowledgment and resolution
+- **Scheduler Control**: Start/stop automated monitoring
+- **Responsive Design**: Works on desktop and mobile
 
 ## 🗄️ MongoDB Schema
 
-### Collections
+### Collections with Indexes
 
-#### products
-```python
-{
-    "_id": ObjectId,
-    "sku": str,                    # Unique product identifier
-    "name": str,                   # Product name
-    "category": str,               # Product category
-    "brand": str,                  # Brand name
-    "original_price": float,       # Original price
-    "current_price": float,        # Current price
-    "total_sales": int,            # Total units sold
-    "total_revenue": float,        # Total revenue generated
-    "demand_forecast": float,      # AI: Demand prediction
-    "optimization_score": float,   # AI: Optimization score
-    "tags": List[str],             # AI: Tags for ML models
-    "created_at": datetime,
-    "updated_at": datetime
-}
-```
+| Collection | Purpose | Documents | Indexes |
+|------------|---------|-----------|---------|
+| products | Product catalog | 100+ | sku, category, brand |
+| warehouses | Warehouse locations | 5+ | warehouse_id, location.city |
+| stores | Store locations | 8+ | store_id, location.city |
+| inventory | Stock levels | 800+ | sku, location_id, location_type |
+| suppliers | Supplier information | 10+ | supplier_id |
+| orders | Order records | Dynamic | order_id, store_id, status |
+| deliveries | Delivery tracking | Dynamic | delivery_id, order_id |
+| signals | Intelligence signals | Dynamic | signal_id, type, severity |
+| replenishment_orders | Auto-generated orders | Dynamic | order_id, status |
+| execution_logs | System events | Dynamic | timestamp, event_type |
 
-#### warehouses
-```python
-{
-    "_id": ObjectId,
-    "warehouse_id": str,           # Unique warehouse ID
-    "name": str,                   # Warehouse name
-    "location": {
-        "city": str,
-        "state": str,
-        "country": str,
-        "coordinates": {
-            "lat": float,
-            "lng": float
-        }
-    },
-    "capacity": int,               # Total capacity
-    "current_utilization": int,    # Current stock
-    "efficiency_metrics": dict,    # AI: Efficiency metrics
-    "created_at": datetime,
-    "updated_at": datetime
-}
-```
+### Key Schema Elements
 
-#### stores
-```python
-{
-    "_id": ObjectId,
-    "store_id": str,               # Unique store ID
-    "name": str,                   # Store name
-    "location": {
-        "city": str,
-        "state": str,
-        "country": str,
-        "coordinates": {
-            "lat": float,
-            "lng": float
-        }
-    },
-    "capacity": int,               # Total capacity
-    "current_utilization": int,    # Current stock
-    "customer_metrics": dict,      # AI: Customer behavior metrics
-    "created_at": datetime,
-    "updated_at": datetime
-}
-```
-
-#### inventory
-```python
-{
-    "_id": ObjectId,
-    "sku": str,                    # Product SKU
-    "location_id": str,            # Warehouse/Store ID
-    "location_type": str,          # "warehouse" or "store"
-    "quantity": int,               # Current quantity
-    "reserved_quantity": int,      # Reserved for orders
-    "available_quantity": int,     # Available for orders
-    "reorder_level": int,          # Reorder threshold
-    "lead_time_days": int,         # Replenishment lead time
-    "stock_velocity": float,       # AI: Stock movement rate
-    "last_restocked": datetime,
-    "updated_at": datetime
-}
-```
-
-#### suppliers
-```python
-{
-    "_id": ObjectId,
-    "supplier_id": str,            # Unique supplier ID
-    "name": str,                   # Supplier name
-    "location": {
-        "city": str,
-        "country": str
-    },
-    "contact": {
-        "email": str,
-        "phone": str
-    },
-    "performance_metrics": dict,   # AI: Performance metrics
-    "created_at": datetime,
-    "updated_at": datetime
-}
-```
-
-#### orders
-```python
-{
-    "_id": ObjectId,
-    "order_id": str,               # Unique order ID
-    "store_id": str,               # Store placing the order
-    "items": List[dict],           # Order items
-    "total_amount": float,         # Total order value
-    "status": str,                 # pending, processing, completed, cancelled
-    "fulfillment": {
-        "source": str,             # Fulfillment source
-        "tracking_number": str,
-        "estimated_delivery": datetime
-    },
-    "optimization": dict,          # AI: Optimization data
-    "created_at": datetime,
-    "updated_at": datetime
-}
-```
-
-#### deliveries
-```python
-{
-    "_id": ObjectId,
-    "delivery_id": str,
-    "order_id": str,
-    "source": str,
-    "destination": str,
-    "status": str,
-    "tracking": dict,
-    "ai_optimization": dict,
-    "created_at": datetime,
-    "updated_at": datetime
-}
-```
-
-### Indexes
-
-- **products**: `sku` (unique), `category`, `brand`
-- **warehouses**: `warehouse_id` (unique), `location.city`
-- **stores**: `store_id` (unique), `location.city`
-- **inventory**: `sku`, `location_id`, `location_type`, `sku+location_id` (compound)
-- **suppliers**: `supplier_id` (unique)
-- **orders**: `order_id` (unique), `store_id`, `status`
-- **deliveries**: `delivery_id` (unique), `order_id`
+**products**: sku, name, category, brand, prices, sales data, AI fields (demand_forecast, optimization_score, tags)  
+**warehouses**: warehouse_id, name, location, capacity, utilization, AI fields (efficiency_metrics)  
+**stores**: store_id, name, location, capacity, utilization, AI fields (customer_metrics)  
+**inventory**: sku, location_id, location_type, quantities, reorder_level, AI fields (stock_velocity)  
+**signals**: signal_id, type, severity, data, timestamp, acknowledged, resolved  
+**deliveries**: delivery_id, order_id, source, destination, status, tracking, ai_optimization  
 
 ## 🔧 Configuration
 
 ### Environment Variables
-
-Create a `.env` file in the project root with your MongoDB Atlas credentials:
 
 ```env
 # MongoDB Configuration (MongoDB Atlas)
@@ -482,190 +269,210 @@ NUM_WAREHOUSES=5
 NUM_STORES=8
 WAREHOUSE_CITIES=["Mumbai", "Delhi", "Bangalore", "Kolkata", "Chennai"]
 STORE_CITIES=["Mumbai", "Delhi", "Bangalore", "Kolkata", "Chennai", "Hyderabad", "Pune", "Ahmedabad"]
+
+# Intelligence Configuration
+SIGNAL_DETECTION_INTERVAL=300  # seconds
+SCHEDULER_ENABLED=true
 ```
 
-## 📈 Monitoring Engine
+## 📈 System Capabilities
 
-The monitoring service provides:
+### Data Processing
+- Load CSV datasets (supply chain + fashion)
+- Validate and transform data
+- Generate synthetic warehouses and stores
+- Create realistic inventory distribution
+- Establish MongoDB indexes
 
-- **Stock Monitoring**: Track total stock, distribution, and velocity
-- **KPI Calculation**: Key performance indicators (revenue, utilization, alerts)
-- **Low Stock Detection**: Identify products below threshold
-- **Warehouse Utilization**: Monitor capacity usage
-- **Category Analysis**: Stock by product category
-- **Top Products**: Products by revenue and sales
-- **Alert Generation**: Critical and warning alerts
+### Monitoring & Analytics
+- Real-time KPI tracking
+- Stock distribution analysis
+- Low stock detection (configurable threshold)
+- Warehouse utilization monitoring
+- Category-wise stock analysis
+- Top product identification
 
-Example usage:
+### Order Management
+- Order creation and validation
+- Inventory availability checking
+- Stock reservation and updates
+- Order status tracking
+- Fulfillment source assignment
 
-```python
-from services.monitoring_service import MonitoringService
+### Delivery Management
+- Delivery creation and tracking
+- Status updates (pending, in_transit, delivered)
+- Route optimization
+- Real-time tracking
 
-# Get system KPIs
-kpis = MonitoringService.get_kpis()
-print(f"Total Stock: {kpis['total_stock']}")
-print(f"Low Stock Alerts: {kpis['low_stock_alerts']}")
+### Intelligence Layer
+- **Signal Detection**: Automated monitoring of critical events
+- **Alert System**: Severity-based alerts (critical, warning, info)
+- **Scheduler**: Background tasks for periodic checks
+- **Decision Engine**: AI-powered recommendations
+- **Execution Logging**: Track all system events
 
-# Detect low stock
-low_stock = MonitoringService.detect_low_stock(threshold=20)
-for item in low_stock:
-    print(f"Low stock: {item['sku']} - {item['quantity']} units")
+### Forecasting
+- Demand prediction using historical data
+- Seasonal trend analysis
+- Inventory optimization recommendations
+- Replenishment order generation
 
-# Get product distribution
-distribution = MonitoringService.get_product_distribution("SKU-001")
-for loc in distribution:
-    print(f"{loc['location_id']}: {loc['quantity']} units")
-```
+## 🎯 Expected Data After Seeding
 
-## 🛒 Order Simulation
+| Entity | Count | Details |
+|--------|-------|---------|
+| Products | 100+ | From fashion dataset |
+| Warehouses | 5+ | Major Indian cities |
+| Stores | 8+ | Across 8 cities |
+| Suppliers | 10+ | From dataset |
+| Inventory Records | 800+ | Multi-location stock |
+| Total Stock Units | 15,000+ | High in WH, low in stores |
 
-The order service handles:
+### Stock Distribution
+- **Warehouses**: ~80% of total stock (high capacity)
+- **Stores**: ~20% of total stock (quick access)
+- **Low Stock Alerts**: 5-10 items initially
 
-- **Order Creation**: Validate and create orders
-- **Stock Validation**: Check inventory availability
-- **Inventory Updates**: Update stock after order creation
-- **Status Tracking**: Track order fulfillment status
+## 🔧 Technical Highlights
 
-Example:
+### Architecture Patterns
+- **Singleton Pattern** - Database connection management
+- **Dependency Injection** - FastAPI database access
+- **Separation of Concerns** - Clear layer boundaries
+- **Repository Pattern** - Data access abstraction
+- **Observer Pattern** - Signal detection and alerting
 
-```python
-from services.order_service import OrderService
+### Performance Optimizations
+- **MongoDB Indexes** - Unique and compound indexes
+- **Aggregation Pipelines** - Efficient complex queries
+- **Pydantic Validation** - Fast data validation
+- **Async Ready** - FastAPI async support
+- **Background Scheduler** - Automated monitoring
 
-# Create an order
-order_data = {
-    "store_id": "STORE-001",
-    "items": [
-        {"sku": "SKU-001", "quantity": 5},
-        {"sku": "SKU-002", "quantity": 3}
-    ]
-}
+### Future-Ready Design
+- **AI/ML Fields** - Reserved for demand forecasting, optimization
+- **Agent Hooks** - Ready for autonomous agents
+- **Scalable Schema** - Easy to extend
+- **Modular Structure** - Easy to add features
+- **Intelligence Layer** - Foundation for AI integration
 
-order = OrderService.create_order(order_data)
-print(f"Order created: {order['order_id']}")
+## 🧪 Test the System
 
-# Update order status
-updated = OrderService.update_order_status(order['order_id'], "completed")
-print(f"Order status: {updated['status']}")
-```
-
-## 🧪 Testing
-
-### Test API Endpoints
+### API Examples
 
 ```bash
-# Health check
+# Health check with scheduler status
 curl http://localhost:8000/health
 
-# Get products
+# Get all products
 curl http://localhost:8000/api/products
-
-# Get warehouses
-curl http://localhost:8000/api/warehouses
 
 # Get dashboard overview
 curl http://localhost:8000/api/dashboard/overview
 
-# Create an order
+# Get low stock alerts
+curl http://localhost:8000/api/signals/alerts?acknowledged=false
+
+# Get signal statistics
+curl http://localhost:8000/api/signals/stats
+
+# Run all detections manually
+curl -X POST http://localhost:8000/api/signals/detect/all
+
+# Create a test order
 curl -X POST http://localhost:8000/api/orders \
   -H "Content-Type: application/json" \
-  -d '{"store_id": "STORE-001", "items": [{"sku": "SKU-001", "quantity": 5}]}'
+  -d '{
+    "store_id": "ST001",
+    "items": [{"sku": "SKU-001", "quantity": 5}]
+  }'
+
+# Get delivery status
+curl http://localhost:8000/api/deliveries?limit=10
+
+# Get forecast
+curl http://localhost:8000/api/forecast
 ```
 
-### Test with Python
+### Frontend Testing
+1. Navigate to http://localhost:3000
+2. Explore all 10 pages
+3. Test signal acknowledgment in Alerts page
+4. Run manual detections in Intelligence page
+5. Create orders and track deliveries
+6. View real-time updates with polling
 
-```python
-import requests
+## 🔍 Troubleshooting
 
-# Get KPIs
-response = requests.get("http://localhost:8000/api/dashboard/overview")
-kpis = response.json()
-print(kpis)
+### Can't connect to MongoDB
+1. Verify your MongoDB Atlas cluster is running
+2. Check your `.env` file has correct `MONGODB_URI` connection string
+3. Ensure your IP address is whitelisted in MongoDB Atlas
+4. Verify your MongoDB Atlas credentials are correct
 
-# Get low stock alerts
-response = requests.get("http://localhost:8000/api/dashboard/low-stock?threshold=20")
-alerts = response.json()
-print(alerts)
-```
+### Frontend shows no data
+1. Make sure you ran the seed script: `python backend/scripts/seed_data.py`
+2. Check the seed script output for errors
+3. Verify data in your MongoDB Atlas dashboard
+4. Ensure the FastAPI backend is running on http://localhost:8000
 
-## 📊 Example Data
+### Signals not detecting
+1. Check scheduler status: `curl http://localhost:8000/api/signals/scheduler/status`
+2. Verify scheduler is running and has jobs
+3. Check execution logs for errors
+4. Manually trigger detection: `curl -X POST http://localhost:8000/api/signals/detect/all`
 
-After seeding, you'll have:
+### API returns errors
+1. Check the terminal where uvicorn is running for error messages
+2. Verify all dependencies are installed: `pip list`
+3. Check your `.env` file is configured correctly
 
-- **100+ Products** from fashion dataset
-  - Categories: T-shirts, Jeans, Dresses, Jackets, etc.
-  - Brands: Nike, Adidas, etc.
-  - Price range: $10 - $200
+## 🎓 What's Next?
 
-- **5 Warehouses** in major cities:
-  - Mumbai, Delhi, Bangalore, Kolkata, Chennai
-  - Capacity: 5000 units each
-  - Stock: 100-500 units per product (high)
+### Phase 4: Advanced AI Integration (Future)
+- Machine learning models for demand prediction
+- Reinforcement learning for inventory optimization
+- Natural language processing for supplier communication
+- Computer vision for quality control
 
-- **8 Stores** across cities:
-  - Mumbai, Delhi, Bangalore, Kolkata, Chennai, Hyderabad, Pune, Ahmedabad
-  - Capacity: 1000 units each
-  - Stock: 10-50 units per product (low)
-
-- **Inventory Distribution**:
-  - Total stock: ~15,000+ units
-  - Warehouse stock: ~12,000 units
-  - Store stock: ~3,000 units
-  - Low stock alerts: ~5-10 items
-
-## 🚀 Future Phases
-
-This Phase 1 system is designed to support future phases:
-
-### Phase 2: AI/ML Integration
-- Demand forecasting models
-- Inventory optimization
-- Price optimization
-- Customer behavior analysis
-
-### Phase 3: Multi-Agent System
-- Autonomous agents for inventory management
+### Phase 5: Multi-Agent System (Future)
+- Autonomous inventory management agents
 - Order fulfillment agents
 - Supplier coordination agents
 - Demand prediction agents
+- Route optimization agents
 
-### Phase 4: Advanced Features
-- Real-time demand prediction
-- Automated restocking
-- Dynamic pricing
-- Route optimization
-- Predictive maintenance
+### Phase 6: Enterprise Features (Future)
+- Multi-tenant support
+- Role-based access control
+- Audit logging
+- Advanced reporting
+- Integration with ERP systems
 
-## 🤝 Contributing
+## ✅ Success Criteria Met
 
-This is a Phase 1 implementation focusing on infrastructure and monitoring. Future phases will add AI/ML capabilities and multi-agent orchestration.
+✅ MongoDB running and seeded with data  
+✅ All API endpoints implemented and functional  
+✅ React frontend displays KPIs and charts correctly  
+✅ Low stock alerts detected and shown  
+✅ Orders can be created and inventory updates  
+✅ Intelligence layer with signal detection working  
+✅ Background scheduler for automated monitoring  
+✅ Delivery management and tracking  
+✅ Forecasting capabilities  
+✅ System is scalable for future AI/agent integration  
+✅ Complete documentation provided  
 
-## 🙏 Acknowledgments
 
-Built with:
-- FastAPI - Modern web framework
-- MongoDB - Flexible NoSQL database
-- Streamlit - Interactive dashboards
-- pandas - Data processing
-
-## 📞 Support
-
-For issues or questions:
-1. Check the [Architect Plan](plans/phase1_architect_plan.md)
-2. Review API docs at `/docs`
-3. Check your MongoDB Atlas dashboard
-4. Check API logs in terminal
-
-## 🎯 Success Criteria
-
-Phase 1 is successful when:
-
-- ✅ MongoDB Atlas is connected and seeded with data
-- ✅ All API endpoints return correct data
-- ✅ Dashboard displays KPIs and charts correctly
-- ✅ Low stock alerts are detected and shown
-- ✅ Orders can be created and inventory updates
-- ✅ System is scalable for future AI/agent integration
+The Supply Chain Management System is now ready for:
+1. **Testing** - Verify all functionality works as expected
+2. **Demonstration** - Show stakeholders the system
+3. **Scaling** - Add more products, warehouses, stores
+4. **Integration** - Connect to real systems
+5. **Next Phase** - Begin advanced AI integration
 
 ---
 
-**Built for the Multi-Agent AI System for Supply Chain Management Orchestration**
+**Built with ❤️ for the Multi-Agent AI System for Supply Chain Management Orchestration**
+**Version 3.0.0 - Sensing & Intelligence Layer**
