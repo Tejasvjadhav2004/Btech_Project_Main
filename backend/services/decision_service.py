@@ -94,8 +94,19 @@ class DecisionService:
     DEFAULT_REPLENISHMENT_QTY = 50
     
     def __init__(self):
-        self.db = mongodb.get_database()
-        self.signal_service = SignalService()
+        # Don't cache database reference - get it dynamically each time
+        pass
+    
+    @property
+    def db(self):
+        """Get database connection dynamically"""
+        return mongodb.get_database()
+    
+    @property
+    def signal_service(self):
+        """Get signal service dynamically"""
+        from services.signal_service import SignalService
+        return SignalService()
     
     def _generate_event_id(self) -> str:
         """Generate unique event ID"""
@@ -265,39 +276,66 @@ class DecisionService:
     ) -> Dict[str, Any]:
         """
         Create a replenishment order for low stock or stockout signals.
-        
+
         This creates an order from a supplier to replenish warehouse stock.
+        Uses real data from inventory (reorder_threshold, reorder_quantity) and products (price).
         """
         signal_id = signal["signal_id"]
         details = signal.get("details", {})
-        
+
         sku = details.get("sku")
         warehouse_id = signal.get("entity_id")
         current_stock = details.get("available_stock", 0)
         threshold = details.get("threshold", settings.low_stock_threshold)
-        
+
         if not sku or not warehouse_id:
             return {
                 "action": ActionType.CREATE_REPLENISHMENT_ORDER,
                 "status": "failed",
                 "error": "Missing SKU or warehouse_id in signal details"
             }
-        
-        # Calculate replenishment quantity
-        target_stock = threshold * 3  # Target 3x the threshold
-        replenishment_qty = max(self.DEFAULT_REPLENISHMENT_QTY, target_stock - current_stock)
-        
+
+        # Get inventory record for real reorder_quantity and reorder_threshold
+        inventory_record = self.db.inventory.find_one({
+            "sku": sku,
+            "location_id": warehouse_id
+        })
+
+        # Use real values from inventory if available
+        if inventory_record:
+            reorder_quantity = inventory_record.get("reorder_quantity", 50)
+            reorder_threshold = inventory_record.get("reorder_threshold", threshold)
+            optimal_stock = inventory_record.get("optimal_stock")
+        else:
+            reorder_quantity = 50
+            reorder_threshold = threshold
+            optimal_stock = None
+
+        # Calculate replenishment quantity using real data
+        # Priority: optimal_stock > reorder_quantity > calculated
+        if optimal_stock and optimal_stock > current_stock:
+            replenishment_qty = optimal_stock - current_stock
+        else:
+            # Calculate to bring stock to 3x threshold or use reorder_quantity
+            target_stock = max(reorder_threshold * 3, current_stock + reorder_quantity)
+            replenishment_qty = max(reorder_quantity, target_stock - current_stock)
+
+        # Get product price for unit_price
+        product = self.db.products.find_one({"sku": sku})
+        unit_price = product.get("current_price", 0) if product else 0
+
         # Find a supplier for this product
-        supplier = self.db.suppliers.find_one({"products": sku})
+        supplier = self.db.suppliers.find_one(
+            {"products": {"$in": [sku]}} if sku else {}
+        )
         if not supplier:
-            # Use default supplier
             supplier = self.db.suppliers.find_one()
-        
+
         supplier_id = supplier["supplier_id"] if supplier else "SUP-DEFAULT"
-        
+
         # Create replenishment order
         order_id = f"REPL-{uuid.uuid4().hex[:8].upper()}"
-        
+
         replenishment_order = {
             "order_id": order_id,
             "order_type": "replenishment",
@@ -307,14 +345,23 @@ class DecisionService:
             "items": [{
                 "sku": sku,
                 "quantity": replenishment_qty,
-                "unit_price": 0  # To be filled by procurement
+                "unit_price": unit_price,
+                "total_price": unit_price * replenishment_qty
             }],
+            "total_amount": unit_price * replenishment_qty,
             "status": "pending_approval",
             "priority": "high" if signal["type"] == SignalType.STOCKOUT else priority,
             "created_at": datetime.utcnow(),
             "updated_at": datetime.utcnow(),
             "auto_generated": True,
-            "notes": f"Auto-generated from signal {signal_id}"
+            "notes": f"Auto-generated from signal {signal_id}",
+            "calculation_details": {
+                "current_stock": current_stock,
+                "reorder_threshold": reorder_threshold,
+                "reorder_quantity_used": reorder_quantity,
+                "optimal_stock": optimal_stock,
+                "calculated_replenishment_qty": replenishment_qty
+            }
         }
         
         # Insert into orders collection (or a separate replenishment_orders collection)
@@ -546,23 +593,245 @@ class DecisionService:
             return []
     
     def approve_replenishment_order(self, order_id: str) -> Dict[str, Any]:
-        """Approve a replenishment order"""
-        result = self.db.replenishment_orders.update_one(
+        """
+        Approve a replenishment order and execute the restocking.
+
+        This:
+        1. Updates order status to 'approved'
+        2. Adds stock to the warehouse inventory
+        3. Updates warehouse utilization
+        4. Resolves related signals if stock is now above threshold
+        5. Creates a transaction record
+        """
+        # Get the order
+        order = self.db.replenishment_orders.find_one({"order_id": order_id})
+        if not order:
+            return {"success": False, "error": "Order not found"}
+
+        if order["status"] != "pending_approval":
+            return {"success": False, "error": f"Order already {order['status']}"}
+
+        warehouse_id = order["warehouse_id"]
+        items = order.get("items", [])
+        signal_id = order.get("triggered_by_signal")
+
+        updated_inventory = []
+        resolved_signals = []
+
+        # Process each item in the order
+        for item in items:
+            sku = item["sku"]
+            quantity = item["quantity"]
+
+            # Find inventory record for this SKU at this location
+            # Note: location could be warehouse or store, so don't filter by location_type
+            inventory = self.db.inventory.find_one({
+                "sku": sku,
+                "location_id": warehouse_id
+            })
+
+            if inventory:
+                # Update inventory stock
+                old_stock = inventory.get("current_stock", inventory.get("quantity", 0))
+                old_available = inventory.get("available_stock", old_stock - inventory.get("reserved_stock", 0))
+                new_stock = old_stock + quantity
+                new_available = old_available + quantity
+
+                # Update inventory record
+                self.db.inventory.update_one(
+                    {"_id": inventory["_id"]},
+                    {
+                        "$set": {
+                            "current_stock": new_stock,
+                            "available_stock": new_available,
+                            "quantity": new_stock,
+                            "last_restocked": datetime.utcnow(),
+                            "last_updated": datetime.utcnow(),
+                            "updated_at": datetime.utcnow()
+                        },
+                        "$inc": {
+                            "total_restock": quantity
+                        }
+                    }
+                )
+
+                updated_inventory.append({
+                    "sku": sku,
+                    "old_stock": old_stock,
+                    "new_stock": new_stock,
+                    "quantity_added": quantity
+                })
+
+                logger.info(f"Restocked {quantity} units of {sku} at {warehouse_id} (was {old_stock}, now {new_stock})")
+            else:
+                # Create new inventory record if doesn't exist
+                new_inventory = {
+                    "sku": sku,
+                    "location_id": warehouse_id,
+                    "location_type": "warehouse",
+                    "current_stock": quantity,
+                    "available_stock": quantity,
+                    "reserved_stock": 0,
+                    "initial_stock": quantity,
+                    "quantity": quantity,
+                    "incoming_stock": 0,
+                    "damaged_stock": 0,
+                    "transactions_count": 1,
+                    "total_sales": 0,
+                    "total_restock": quantity,
+                    "reorder_threshold": 20,
+                    "reorder_quantity": 50,
+                    "last_restocked": datetime.utcnow(),
+                    "last_updated": datetime.utcnow(),
+                    "created_at": datetime.utcnow(),
+                    "updated_at": datetime.utcnow()
+                }
+                # Use update with upsert to avoid duplicate key errors
+                result = self.db.inventory.update_one(
+                    {"sku": sku, "location_id": warehouse_id},
+                    {
+                        "$setOnInsert": new_inventory,
+                        "$inc": {"total_restock": quantity}
+                    },
+                    upsert=True
+                )
+
+                if result.upserted_id:
+                    logger.info(f"Created new inventory record: {quantity} units of {sku} at {warehouse_id}")
+                else:
+                    # Record already existed (race condition), just update it
+                    self.db.inventory.update_one(
+                        {"sku": sku, "location_id": warehouse_id},
+                        {
+                            "$inc": {
+                                "current_stock": quantity,
+                                "available_stock": quantity,
+                                "quantity": quantity
+                            },
+                            "$set": {
+                                "last_restocked": datetime.utcnow(),
+                                "last_updated": datetime.utcnow(),
+                                "updated_at": datetime.utcnow()
+                            }
+                        }
+                    )
+                    logger.info(f"Updated existing inventory record (race condition): {quantity} units of {sku} at {warehouse_id}")
+
+                updated_inventory.append({
+                    "sku": sku,
+                    "old_stock": 0,
+                    "new_stock": quantity,
+                    "quantity_added": quantity
+                })
+
+                logger.info(f"Created new inventory record: {quantity} units of {sku} at {warehouse_id}")
+
+        # Update warehouse utilization
+        self._update_warehouse_utilization(warehouse_id)
+
+        # Resolve related signal if stock is now above threshold
+        if signal_id:
+            try:
+                # Get the signal details to check threshold
+                signal = self.signal_service.get_signal(signal_id)
+                if signal and signal.get("status") in ["active", "acknowledged"]:
+                    details = signal.get("details", {})
+                    threshold = details.get("threshold", 20)
+                    sku = items[0]["sku"] if items else None
+
+                    if sku:
+                        # Check current stock
+                        inv = self.db.inventory.find_one({
+                            "sku": sku,
+                            "location_id": warehouse_id
+                        })
+                        current_stock = inv.get("current_stock", 0) if inv else 0
+
+                        if current_stock > threshold:
+                            # Auto-resolve the signal
+                            self.signal_service.resolve_signal(
+                                signal_id,
+                                auto_resolved=True,
+                                action_taken={
+                                    "type": "replenishment_approved",
+                                    "order_id": order_id,
+                                    "quantity_added": items[0]["quantity"] if items else 0,
+                                    "new_stock": current_stock
+                                }
+                            )
+                            resolved_signals.append(signal_id)
+                            logger.info(f"Auto-resolved signal {signal_id} - stock now above threshold")
+            except Exception as e:
+                logger.warning(f"Could not auto-resolve signal {signal_id}: {e}")
+
+        # Create transaction record
+        transaction_id = f"TXN-{uuid.uuid4().hex[:8].upper()}"
+        transaction = {
+            "transaction_id": transaction_id,
+            "type": "restock",
+            "sku": items[0]["sku"] if items else None,
+            "quantity": sum(item["quantity"] for item in items),
+            "location_id": warehouse_id,
+            "location_type": "warehouse",
+            "order_id": order_id,
+            "supplier_id": order.get("supplier_id"),
+            "timestamp": datetime.utcnow(),
+            "status": "completed",
+            "notes": f"Replenishment order {order_id} approved"
+        }
+        self.db.transactions.insert_one(transaction)
+
+        # Update order status to approved
+        self.db.replenishment_orders.update_one(
             {"order_id": order_id},
             {
                 "$set": {
                     "status": "approved",
                     "approved_at": datetime.utcnow(),
-                    "updated_at": datetime.utcnow()
+                    "updated_at": datetime.utcnow(),
+                    "inventory_updates": updated_inventory,
+                    "resolved_signals": resolved_signals,
+                    "transaction_id": transaction_id
                 }
             }
         )
-        
-        if result.modified_count > 0:
-            logger.info(f"Replenishment order {order_id} approved")
-            return {"success": True, "order_id": order_id, "status": "approved"}
-        
-        return {"success": False, "error": "Order not found or already processed"}
+
+        logger.info(f"Replenishment order {order_id} approved and executed successfully")
+
+        return {
+            "success": True,
+            "order_id": order_id,
+            "status": "approved",
+            "inventory_updated": updated_inventory,
+            "signals_resolved": resolved_signals,
+            "transaction_id": transaction_id,
+            "message": f"Restocked {sum(i['quantity'] for i in items)} units at {warehouse_id}"
+        }
+
+    def _update_warehouse_utilization(self, warehouse_id: str):
+        """Recalculate and update warehouse utilization after restocking"""
+        try:
+            # Sum all inventory at this warehouse
+            pipeline = [
+                {"$match": {"location_id": warehouse_id, "location_type": "warehouse"}},
+                {"$group": {"_id": None, "total": {"$sum": "$current_stock"}}}
+            ]
+            result = list(self.db.inventory.aggregate(pipeline))
+            total_stock = result[0]["total"] if result else 0
+
+            # Update warehouse
+            self.db.warehouses.update_one(
+                {"warehouse_id": warehouse_id},
+                {
+                    "$set": {
+                        "current_utilization": total_stock,
+                        "updated_at": datetime.utcnow()
+                    }
+                }
+            )
+            logger.info(f"Updated warehouse {warehouse_id} utilization to {total_stock}")
+        except Exception as e:
+            logger.error(f"Error updating warehouse utilization: {e}")
     
     def get_alerts(
         self,

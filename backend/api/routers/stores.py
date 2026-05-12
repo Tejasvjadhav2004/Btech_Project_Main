@@ -18,11 +18,36 @@ async def get_stores():
     db = get_db()
     stores = list(db.stores.find({}))
     
+    # Transform store data to match StoreResponse model
+    response_stores = []
     for store in stores:
-        store["id"] = str(store["_id"])
-        del store["_id"]
+        # Get location from nested object or fall back to flat fields
+        location_data = store.get("location", {})
+        location = {
+            "city": location_data.get("city", store.get("location_city", "Unknown")),
+            "state": location_data.get("state", store.get("location_state")),
+            "country": location_data.get("country", store.get("location_country", "India")),
+            "coordinates": location_data.get("coordinates", store.get("coordinates"))
+        }
+        
+        # Build response object matching StoreResponse schema
+        response_store = {
+            "id": str(store["_id"]),
+            "store_id": store.get("store_id", ""),
+            "name": store.get("name", ""),
+            "location": location,
+            "store_type": store.get("store_type", "Boutique"),
+            "capacity": store.get("capacity", 10000),
+            "current_utilization": store.get("current_utilization", 0),
+            "is_active": store.get("is_active", True),
+            "created_at": store.get("created_at"),
+            "updated_at": store.get("updated_at"),
+            "customer_metrics": store.get("customer_metrics")
+        }
+        
+        response_stores.append(response_store)
     
-    return stores
+    return response_stores
 
 
 @router.get("/{store_id}", response_model=StoreResponse)
@@ -34,10 +59,31 @@ async def get_store(store_id: str):
     if not store:
         raise HTTPException(status_code=404, detail=f"Store {store_id} not found")
     
-    store["id"] = str(store["_id"])
-    del store["_id"]
+    # Get location from nested object or fall back to flat fields
+    location_data = store.get("location", {})
+    location = {
+        "city": location_data.get("city", store.get("location_city", "Unknown")),
+        "state": location_data.get("state", store.get("location_state")),
+        "country": location_data.get("country", store.get("location_country", "India")),
+        "coordinates": location_data.get("coordinates", store.get("coordinates"))
+    }
     
-    return store
+    # Build response object matching StoreResponse schema
+    response_store = {
+        "id": str(store["_id"]),
+        "store_id": store.get("store_id", ""),
+        "name": store.get("name", ""),
+        "location": location,
+        "store_type": store.get("store_type", "Boutique"),
+        "capacity": store.get("capacity", 10000),
+        "current_utilization": store.get("current_utilization", 0),
+        "is_active": store.get("is_active", True),
+        "created_at": store.get("created_at"),
+        "updated_at": store.get("updated_at"),
+        "customer_metrics": store.get("customer_metrics")
+    }
+    
+    return response_store
 
 
 @router.get("/{store_id}/inventory")

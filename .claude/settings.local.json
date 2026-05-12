@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python diagnose_location_issue.py)"
+    ]
+  }
+}

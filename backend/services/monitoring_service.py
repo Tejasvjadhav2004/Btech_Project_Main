@@ -13,7 +13,13 @@ class MonitoringService:
     """Monitoring service for stock and operations"""
     
     def __init__(self):
-        self.db = mongodb.get_database()
+        # Don't cache database reference - get it dynamically each time
+        pass
+    
+    @property
+    def db(self):
+        """Get database connection dynamically"""
+        return mongodb.get_database()
     
     def get_total_stock(self) -> Dict[str, Any]:
         """Calculate total stock across all locations"""

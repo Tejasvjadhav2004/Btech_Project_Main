@@ -1,18 +1,62 @@
 import React from 'react';
 
-const Sidebar = ({ activeTab, setActiveTab }) => {
-  const tabs = [
-    { id: 'dashboard', label: 'Dashboard' },
-    { id: 'intelligence', label: 'Intelligence' },
-    { id: 'inventory', label: 'Inventory' },
-    { id: 'forecast', label: 'Demand Forecast' },
-    { id: 'alerts', label: 'Alerts' },
-    { id: 'orders', label: 'Orders' },
-    { id: 'deliveries', label: 'Deliveries' },
-    { id: 'warehouses', label: 'Warehouses' },
-    { id: 'stores', label: 'Stores' },
-    { id: 'logs', label: 'Logs / Anomalies' }
-  ];
+const Sidebar = ({ activeTab, setActiveTab, selectedRole }) => {
+  // Define role-specific menu items
+  const roleBasedTabs = {
+    BUSINESS: [
+      { id: 'dashboard', label: 'Dashboard' },
+      { id: 'intelligence', label: 'Intelligence' },
+      { id: 'predictive', label: 'Predictive AI' },
+      { id: 'orchestration', label: 'Orchestration' },
+      { id: 'llm-orchestration', label: 'LLM Orchestration' },
+      { id: 'inventory', label: 'Inventory' },
+      { id: 'forecast', label: 'Demand Forecast' },
+      { id: 'alerts', label: 'Alerts' },
+      { id: 'orders', label: 'Orders' },
+      { id: 'deliveries', label: 'Deliveries' },
+      { id: 'warehouses', label: 'Warehouses' },
+      { id: 'stores', label: 'Stores' },
+      { id: 'logs', label: 'Logs / Anomalies' }
+    ],
+    WAREHOUSE_MANAGER: [
+      { id: 'dashboard', label: 'Dashboard' },
+      { id: 'inventory', label: 'Inventory' },
+      { id: 'warehouses', label: 'Warehouses' },
+      { id: 'alerts', label: 'Alerts' },
+      { id: 'logs', label: 'Logs' }
+    ],
+    STORE_MANAGER: [
+      { id: 'dashboard', label: 'Dashboard' },
+      { id: 'orders', label: 'Orders' },
+      { id: 'deliveries', label: 'Deliveries' },
+      { id: 'stores', label: 'Stores' },
+      { id: 'inventory', label: 'Inventory' }
+    ],
+    LOGISTICS_MANAGER: [
+      { id: 'dashboard', label: 'Dashboard' },
+      { id: 'deliveries', label: 'Deliveries' },
+      { id: 'orders', label: 'Orders' },
+      { id: 'alerts', label: 'Alerts' },
+      { id: 'warehouses', label: 'Warehouses' }
+    ],
+    ADMIN: [
+      { id: 'dashboard', label: 'Dashboard' },
+      { id: 'intelligence', label: 'Intelligence' },
+      { id: 'predictive', label: 'Predictive AI' },
+      { id: 'orchestration', label: 'Orchestration' },
+      { id: 'llm-orchestration', label: 'LLM Orchestration' },
+      { id: 'inventory', label: 'Inventory' },
+      { id: 'forecast', label: 'Demand Forecast' },
+      { id: 'alerts', label: 'Alerts' },
+      { id: 'orders', label: 'Orders' },
+      { id: 'deliveries', label: 'Deliveries' },
+      { id: 'warehouses', label: 'Warehouses' },
+      { id: 'stores', label: 'Stores' },
+      { id: 'logs', label: 'Logs / Anomalies' }
+    ]
+  };
+
+  const tabs = roleBasedTabs[selectedRole] || roleBasedTabs.BUSINESS;
 
   return (
     <div style={{

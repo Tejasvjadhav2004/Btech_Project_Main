@@ -21,9 +21,12 @@ export const getProductsList = async () => {
 // Get detailed inventory data with stock levels
 export const getInventoryWithStock = async () => {
   try {
+    console.log('Fetching inventory data...');
     const response = await api.get('/api/inventory?limit=500');
+    console.log('Inventory data received:', response.data);
     return response.data;
   } catch (e) {
+    console.error('Error fetching inventory data:', e);
     return [];
   }
 };
@@ -48,13 +51,45 @@ export const getAlerts = async () => {
   return response.data;
 };
 
-export const fetchOrders = async () => {
-  const response = await api.get('/api/orders?limit=100');
+export const fetchOrders = async (status = null) => {
+  const params = new URLSearchParams({ limit: 100 });
+  if (status && status !== 'All') params.append('status', status.toLowerCase());
+  const response = await api.get(`/api/orders?${params.toString()}`);
   return response.data;
 };
 
 export const triggerOrder = async (sku, store_id, quantity = 10) => {
   const response = await api.post('/api/orders/create', { sku, store_id, quantity, priority: "normal" });
+  return response.data;
+};
+
+export const validateOrder = async (sku, store_id, quantity) => {
+  const response = await api.post('/api/orders/validate', { sku, store_id, quantity });
+  return response.data;
+};
+
+export const processOrder = async (orderId) => {
+  const response = await api.post(`/api/orders/process/${orderId}`);
+  return response.data;
+};
+
+export const shipOrder = async (orderId) => {
+  const response = await api.post(`/api/orders/${orderId}/ship`);
+  return response.data;
+};
+
+export const deliverOrder = async (orderId) => {
+  const response = await api.post(`/api/orders/${orderId}/deliver`);
+  return response.data;
+};
+
+export const cancelOrder = async (orderId) => {
+  const response = await api.post(`/api/orders/${orderId}/cancel`);
+  return response.data;
+};
+
+export const getOrderStats = async () => {
+  const response = await api.get('/api/orders/stats');
   return response.data;
 };
 
@@ -167,8 +202,14 @@ export const acknowledgeSignal = async (signalId) => {
   return response.data;
 };
 
-export const resolveSignal = async (signalId) => {
-  const response = await api.post(`/api/signals/${signalId}/resolve`);
+export const resolveSignal = async (signalId, verify = false) => {
+  const params = verify ? '?verify=true' : '';
+  const response = await api.post(`/api/signals/${signalId}/resolve${params}`);
+  return response.data;
+};
+
+export const verifySignal = async (signalId) => {
+  const response = await api.post(`/api/signals/${signalId}/verify`);
   return response.data;
 };
 
@@ -212,3 +253,252 @@ export const approveReplenishmentOrder = async (id) => {
   const response = await api.post(`/api/signals/replenishment-orders/${id}/approve`);
   return response.data;
 };
+
+// Role Management
+export const getAvailableRoles = () => {
+  return [
+    {
+      id: 'BUSINESS',
+      name: 'Business Owner',
+      description: 'Overview of entire supply chain'
+    },
+    {
+      id: 'WAREHOUSE_MANAGER',
+      name: 'Warehouse Manager',
+      description: 'Manage warehouse operations'
+    },
+    {
+      id: 'STORE_MANAGER',
+      name: 'Store Manager',
+      description: 'Manage store inventory'
+    },
+    {
+      id: 'LOGISTICS_MANAGER',
+      name: 'Logistics Manager',
+      description: 'Manage deliveries and transportation'
+    },
+    {
+      id: 'ADMIN',
+      name: 'Administrator',
+      description: 'Full system access'
+    }
+  ];
+};
+
+// Predictive Intelligence Endpoints
+export const getDemandPredictions = async (sku = null, storeId = null, limit = 100) => {
+  try {
+    const params = new URLSearchParams({ limit });
+    if (sku) params.append('sku', sku);
+    if (storeId) params.append('store_id', storeId);
+    const response = await api.get(`/api/predictions/demand?${params.toString()}`);
+    return response.data;
+  } catch (e) {
+    console.error('Error fetching demand predictions:', e);
+    return [];
+  }
+};
+
+export const getDemandPredictionForSkuStore = async (sku, storeId, daysAhead = 7) => {
+  try {
+    const response = await api.get(`/api/predictions/demand/${sku}/${storeId}?days_ahead=${daysAhead}`);
+    return response.data;
+  } catch (e) {
+    console.error('Error fetching prediction:', e);
+    return null;
+  }
+};
+
+export const generateDemandPredictions = async () => {
+  const response = await api.post('/api/predictions/demand/generate');
+  return response.data;
+};
+
+export const getStockoutRisks = async (severity = null, limit = 50) => {
+  try {
+    const params = new URLSearchParams({ limit });
+    if (severity) params.append('severity', severity);
+    const response = await api.get(`/api/predictions/stockout-risk?${params.toString()}`);
+    return response.data;
+  } catch (e) {
+    console.error('Error fetching stockout risks:', e);
+    return [];
+  }
+};
+
+export const getDelayRisks = async (severity = null, limit = 50) => {
+  try {
+    const params = new URLSearchParams({ limit });
+    if (severity) params.append('severity', severity);
+    const response = await api.get(`/api/predictions/delay-risk?${params.toString()}`);
+    return response.data;
+  } catch (e) {
+    console.error('Error fetching delay risks:', e);
+    return [];
+  }
+};
+
+export const getAllPredictiveRisks = async (severity = null, limit = 100) => {
+  try {
+    const params = new URLSearchParams({ limit });
+    if (severity) params.append('severity', severity);
+    const response = await api.get(`/api/predictions/all-risks?${params.toString()}`);
+    return response.data;
+  } catch (e) {
+    console.error('Error fetching predictive risks:', e);
+    return [];
+  }
+};
+
+export const runPredictiveSensing = async () => {
+  const response = await api.post('/api/predictions/run-predictive-sensing');
+  return response.data;
+};
+
+export const getHighDemandItems = async (threshold = 50) => {
+  try {
+    const response = await api.get(`/api/predictions/high-demand?threshold=${threshold}`);
+    return response.data;
+  } catch (e) {
+    console.error('Error fetching high demand items:', e);
+    return [];
+  }
+};
+
+export const getModelStatus = async () => {
+  try {
+    const response = await api.get('/api/predictions/model-status');
+    return response.data;
+  } catch (e) {
+    console.error('Error fetching model status:', e);
+    return null;
+  }
+};
+
+export const trainDemandModel = async () => {
+  const response = await api.post('/api/predictions/train-model');
+  return response.data;
+};
+
+// ============================================================
+// LLM ORCHESTRATION APIS
+// ============================================================
+
+export const getOrchestrationContext = async () => {
+  try {
+    const response = await api.get('/api/llm-orchestration/context');
+    return response.data;
+  } catch (e) {
+    console.error('Error fetching orchestration context:', e);
+    return { success: false, context: {} };
+  }
+};
+
+export const generateOrchestrationPlan = async (params = {}) => {
+  try {
+    const response = await api.post('/api/llm-orchestration/plan', {
+      dry_run: params.dry_run !== false,
+      signal_id: params.signal_id,
+      signal_type: params.signal_type,
+      entity_id: params.entity_id
+    });
+    return response.data;
+  } catch (e) {
+    console.error('Error generating orchestration plan:', e);
+    return { success: false, error: e.message };
+  }
+};
+
+export const executeOrchestrationPlan = async (planId, actions) => {
+  try {
+    const response = await api.post('/api/llm-orchestration/execute', {
+      plan_id: planId,
+      actions: actions
+    });
+    return response.data;
+  } catch (e) {
+    console.error('Error executing plan:', e);
+    return { success: false, error: e.message };
+  }
+};
+
+export const getOrchestrationHistory = async (limit = 20) => {
+  try {
+    const response = await api.get(`/api/llm-orchestration/history?limit=${limit}`);
+    return response.data;
+  } catch (e) {
+    console.error('Error fetching orchestration history:', e);
+    return { success: false, history: [] };
+  }
+};
+
+export const getOrchestrationDecision = async (decisionId) => {
+  try {
+    const response = await api.get(`/api/llm-orchestration/decision/${decisionId}`);
+    return response.data;
+  } catch (e) {
+    console.error('Error fetching decision:', e);
+    return { success: false };
+  }
+};
+
+export const explainDecision = async (decisionId) => {
+  try {
+    const response = await api.get(`/api/llm-orchestration/explanation/${decisionId}`);
+    return response.data;
+  } catch (e) {
+    console.error('Error getting explanation:', e);
+    return { success: false };
+  }
+};
+
+export const getOrchestrationMetrics = async () => {
+  try {
+    const response = await api.get('/api/llm-orchestration/metrics');
+    return response.data;
+  } catch (e) {
+    console.error('Error fetching orchestration metrics:', e);
+    return { success: false, metrics: {} };
+  }
+};
+
+export const validateOrchestrationActions = async (actions) => {
+  try {
+    const response = await api.post('/api/llm-orchestration/validate', actions);
+    return response.data;
+  } catch (e) {
+    console.error('Error validating actions:', e);
+    return { success: false };
+  }
+};
+
+export const runAutonomousPipeline = async (dryRun = true) => {
+  try {
+    const response = await api.post(`/api/llm-orchestration/pipeline/run?dry_run=${dryRun}`);
+    return response.data;
+  } catch (e) {
+    console.error('Error running autonomous pipeline:', e);
+    return { success: false, error: e.message };
+  }
+};
+
+export const processSignalPipeline = async (signalId) => {
+  try {
+    const response = await api.post(`/api/llm-orchestration/pipeline/signal/${signalId}`);
+    return response.data;
+  } catch (e) {
+    console.error('Error processing signal pipeline:', e);
+    return { success: false, error: e.message };
+  }
+};
+
+export const getOrchestrationHealth = async () => {
+  try {
+    const response = await api.get('/api/llm-orchestration/health');
+    return response.data;
+  } catch (e) {
+    console.error('Error checking orchestration health:', e);
+    return { status: 'unhealthy', error: e.message };
+  }
+};
+

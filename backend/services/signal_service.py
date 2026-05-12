@@ -23,6 +23,11 @@ class SignalType:
     DELIVERY_DELAY = "DELIVERY_DELAY"
     OVER_UTILIZATION = "OVER_UTILIZATION"
     UNDER_UTILIZATION = "UNDER_UTILIZATION"
+    # Predictive signal types
+    PREDICTED_STOCKOUT = "PREDICTED_STOCKOUT"
+    PREDICTED_DELAY = "PREDICTED_DELAY"
+    DEMAND_SURGE_FORECAST = "DEMAND_SURGE_FORECAST"
+    PREDICTED_OVER_UTILIZATION = "PREDICTED_OVER_UTILIZATION"
 
 
 class SignalSeverity:
@@ -67,11 +72,33 @@ class SignalService:
             "critical_threshold": 95,
             "default": SignalSeverity.HIGH
         },
-        SignalType.UNDER_UTILIZATION: SignalSeverity.LOW
+        SignalType.UNDER_UTILIZATION: SignalSeverity.LOW,
+        # Predictive signal severity rules
+        SignalType.PREDICTED_STOCKOUT: {
+            "critical_days": 1,
+            "high_days": 3,
+            "default": SignalSeverity.HIGH
+        },
+        SignalType.PREDICTED_DELAY: {
+            "critical_probability": 0.85,
+            "high_probability": 0.70,
+            "default": SignalSeverity.MEDIUM
+        },
+        SignalType.DEMAND_SURGE_FORECAST: SignalSeverity.HIGH,
+        SignalType.PREDICTED_OVER_UTILIZATION: {
+            "critical_threshold": 95,
+            "default": SignalSeverity.HIGH
+        }
     }
     
     def __init__(self):
-        self.db = mongodb.get_database()
+        # Don't cache database reference - get it dynamically each time
+        pass
+    
+    @property
+    def db(self):
+        """Get database connection dynamically"""
+        return mongodb.get_database()
     
     def _generate_signal_id(self) -> str:
         """Generate unique signal ID"""
@@ -113,19 +140,39 @@ class SignalService:
                 return SignalSeverity.CRITICAL
             elif current_stock <= rule.get("high_threshold", 10):
                 return SignalSeverity.HIGH
-        
+
         elif signal_type == SignalType.DELIVERY_DELAY and details:
             delay_hours = details.get("delay_hours", 0)
             if delay_hours >= rule.get("critical_hours", 72):
                 return SignalSeverity.CRITICAL
             elif delay_hours >= rule.get("high_hours", 48):
                 return SignalSeverity.HIGH
-        
+
         elif signal_type == SignalType.OVER_UTILIZATION and details:
             utilization = details.get("utilization_percent", 0)
             if utilization >= rule.get("critical_threshold", 95):
                 return SignalSeverity.CRITICAL
-        
+
+        # Predictive signal severity rules
+        elif signal_type == SignalType.PREDICTED_STOCKOUT and details:
+            days_remaining = details.get("days_remaining", 7)
+            if days_remaining <= rule.get("critical_days", 1):
+                return SignalSeverity.CRITICAL
+            elif days_remaining <= rule.get("high_days", 3):
+                return SignalSeverity.HIGH
+
+        elif signal_type == SignalType.PREDICTED_DELAY and details:
+            probability = details.get("probability", 0)
+            if probability >= rule.get("critical_probability", 0.85):
+                return SignalSeverity.CRITICAL
+            elif probability >= rule.get("high_probability", 0.70):
+                return SignalSeverity.HIGH
+
+        elif signal_type == SignalType.PREDICTED_OVER_UTILIZATION and details:
+            utilization = details.get("predicted_utilization_pct", 0)
+            if utilization >= rule.get("critical_threshold", 95):
+                return SignalSeverity.CRITICAL
+
         return rule.get("default", SignalSeverity.MEDIUM)
     
     def _generate_message(
@@ -139,20 +186,29 @@ class SignalService:
         
         messages = {
             SignalType.LOW_STOCK: lambda: f"Low stock alert for {details.get('product_name', details.get('sku', 'product'))} at {entity_type} {entity_id}. Current: {details.get('current_stock', 'N/A')}, Threshold: {details.get('threshold', 'N/A')}",
-            
+
             SignalType.STOCKOUT: lambda: f"STOCKOUT: {details.get('product_name', details.get('sku', 'product'))} is out of stock at {entity_type} {entity_id}",
-            
+
             SignalType.OVERSTOCK: lambda: f"Overstock detected for {details.get('product_name', details.get('sku', 'product'))} at {entity_type} {entity_id}. Current: {details.get('current_stock', 'N/A')}, Normal: {details.get('normal_stock', 'N/A')}",
-            
+
             SignalType.DEMAND_SPIKE: lambda: f"Demand spike detected: {details.get('current_orders', 'N/A')} orders vs {details.get('average_orders', 'N/A')} average ({details.get('spike_factor', 'N/A')}x increase)",
-            
+
             SignalType.DEMAND_DROP: lambda: f"Demand drop detected: {details.get('current_orders', 'N/A')} orders vs {details.get('average_orders', 'N/A')} average ({details.get('drop_factor', 'N/A')}x decrease)",
-            
+
             SignalType.DELIVERY_DELAY: lambda: f"Delivery {entity_id} is delayed by {details.get('delay_hours', 'N/A')} hours. Expected: {details.get('expected_arrival', 'N/A')}",
-            
+
             SignalType.OVER_UTILIZATION: lambda: f"Warehouse {entity_id} is over-utilized at {details.get('utilization_percent', 'N/A')}% (threshold: {details.get('threshold', 90)}%)",
-            
-            SignalType.UNDER_UTILIZATION: lambda: f"Warehouse {entity_id} is under-utilized at {details.get('utilization_percent', 'N/A')}% (threshold: {details.get('threshold', 20)}%)"
+
+            SignalType.UNDER_UTILIZATION: lambda: f"Warehouse {entity_id} is under-utilized at {details.get('utilization_percent', 'N/A')}% (threshold: {details.get('threshold', 20)}%)",
+
+            # Predictive signal messages
+            SignalType.PREDICTED_STOCKOUT: lambda: f"PREDICTED STOCKOUT: {details.get('sku', 'product')} at {entity_type} {entity_id} will likely stock out in {details.get('days_remaining', 'N/A')} days (predicted: {details.get('stockout_date', 'N/A')})",
+
+            SignalType.PREDICTED_DELAY: lambda: f"PREDICTED DELAY: Delivery {entity_id} has {int(details.get('probability', 0) * 100)}% probability of delay",
+
+            SignalType.DEMAND_SURGE_FORECAST: lambda: f"DEMAND SURGE FORECAST: {details.get('sku', 'product')} at {entity_type} {entity_id} expected {details.get('surge_factor', 'N/A')}x demand increase",
+
+            SignalType.PREDICTED_OVER_UTILIZATION: lambda: f"PREDICTED OVER-UTILIZATION: Warehouse {entity_id} predicted to reach {details.get('predicted_utilization_pct', 'N/A')}% utilization"
         }
         
         message_func = messages.get(signal_type)

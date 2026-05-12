@@ -12,7 +12,13 @@ class AnalyticsService:
     """Service for advanced analytics and reporting"""
     
     def __init__(self):
-        self.db = mongodb.get_database()
+        # Don't cache database reference - get it dynamically each time
+        pass
+    
+    @property
+    def db(self):
+        """Get database connection dynamically"""
+        return mongodb.get_database()
     
     def get_stock_velocity(self) -> Dict[str, float]:
         """Calculate stock velocity (units sold per day) - placeholder for future implementation"""

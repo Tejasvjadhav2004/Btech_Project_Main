@@ -26,8 +26,19 @@ class SensingService:
     """
     
     def __init__(self):
-        self.db = mongodb.get_database()
-        self.signal_service = SignalService()
+        # Don't cache database reference - get it dynamically each time
+        pass
+    
+    @property
+    def db(self):
+        """Get database connection dynamically"""
+        return mongodb.get_database()
+    
+    @property
+    def signal_service(self):
+        """Get signal service dynamically"""
+        from services.signal_service import SignalService
+        return SignalService()
     
     # ========================================
     # INVENTORY DETECTION FUNCTIONS
@@ -88,11 +99,17 @@ class SensingService:
                 quantity = item.get("quantity", 0)
                 reserved = item.get("reserved_stock", 0)
                 available = quantity - reserved
-                
-                # Get product name
+
+                # Get product info
                 product = self.db.products.find_one({"sku": sku})
                 product_name = product.get("name", sku) if product else sku
-                
+                product_price = product.get("current_price", 0) if product else 0
+
+                # Use inventory's own threshold and reorder quantity if available
+                item_threshold = item.get("reorder_threshold", threshold)
+                reorder_quantity = item.get("reorder_quantity", 50)
+                optimal_stock = item.get("optimal_stock")
+
                 # Create signal
                 signal = self.signal_service.create_signal(
                     signal_type=SignalType.LOW_STOCK,
@@ -102,12 +119,15 @@ class SensingService:
                     details={
                         "sku": sku,
                         "product_name": product_name,
+                        "product_price": product_price,
                         "current_stock": quantity,
                         "reserved_stock": reserved,
                         "available_stock": available,
-                        "threshold": threshold
+                        "threshold": item_threshold,
+                        "reorder_quantity": reorder_quantity,
+                        "optimal_stock": optimal_stock
                     },
-                    threshold={"low_stock_threshold": threshold},
+                    threshold={"low_stock_threshold": item_threshold},
                     source=source
                 )
                 
@@ -185,11 +205,16 @@ class SensingService:
                 loc_type = item.get("location_type", "warehouse")
                 quantity = item.get("quantity", 0)
                 reserved = item.get("reserved_stock", 0)
-                
-                # Get product name
+
+                # Get product info
                 product = self.db.products.find_one({"sku": sku})
                 product_name = product.get("name", sku) if product else sku
-                
+                product_price = product.get("current_price", 0) if product else 0
+
+                # Get inventory reorder settings
+                item_threshold = item.get("reorder_threshold", 20)
+                reorder_quantity = item.get("reorder_quantity", 50)
+
                 # Create CRITICAL signal for stockout
                 signal = self.signal_service.create_signal(
                     signal_type=SignalType.STOCKOUT,
@@ -200,9 +225,12 @@ class SensingService:
                     details={
                         "sku": sku,
                         "product_name": product_name,
+                        "product_price": product_price,
                         "current_stock": quantity,
                         "reserved_stock": reserved,
-                        "available_stock": 0
+                        "available_stock": 0,
+                        "threshold": item_threshold,
+                        "reorder_quantity": reorder_quantity
                     },
                     source=source
                 )

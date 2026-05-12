@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  getSignalStats, 
-  getSchedulerStatus, 
-  getActiveSignals, 
-  runDetection, 
-  runAllDetections, 
-  startScheduler, 
-  stopScheduler, 
-  acknowledgeSignal, 
+import {
+  getSignalStats,
+  getSchedulerStatus,
+  getActiveSignals,
+  runDetection,
+  runAllDetections,
+  startScheduler,
+  stopScheduler,
+  acknowledgeSignal,
   resolveSignal,
+  verifySignal,
   getReplenishmentOrders,
   approveReplenishmentOrder
 } from '../services/api';
@@ -93,10 +94,27 @@ const Intelligence = () => {
     }
   };
 
-  const handleSignalAction = async (id, action) => {
+  const handleSignalAction = async (id, action, verify = false) => {
     try {
-      if (action === 'ack') await acknowledgeSignal(id);
-      else await resolveSignal(id);
+      if (action === 'ack') {
+        await acknowledgeSignal(id);
+        alert('Signal acknowledged!');
+      } else if (action === 'verify') {
+        const result = await verifySignal(id);
+        if (result.can_resolve) {
+          alert(`✓ Issue verified as fixed!\n${JSON.stringify(result.current_state, null, 2)}`);
+        } else {
+          alert(`✗ Issue not fixed yet:\n${JSON.stringify(result.current_state, null, 2)}`);
+        }
+        return; // Don't refresh, just show status
+      } else if (action === 'resolve') {
+        const result = await resolveSignal(id, verify);
+        if (result.success === false) {
+          alert(`Cannot resolve: ${result.message}\n\nVerification: ${JSON.stringify(result.verification, null, 2)}`);
+          return;
+        }
+        alert('Signal resolved!');
+      }
       fetchData();
     } catch (e) {
       alert(`Error: ${e.message}`);
@@ -105,8 +123,12 @@ const Intelligence = () => {
 
   const handleApproveOrder = async (id) => {
     try {
-      await approveReplenishmentOrder(id);
-      alert('Replenishment Order Approved!');
+      const result = await approveReplenishmentOrder(id);
+      if (result.success) {
+        alert(`✓ Replenishment Order Approved!\n\n${result.message}\n\nInventory Updated: ${JSON.stringify(result.inventory_updated, null, 2)}`);
+      } else {
+        alert(`Error: ${result.error}`);
+      }
       fetchData();
     } catch (e) {
       alert(`Error approving order: ${e.message}`);
@@ -235,13 +257,20 @@ const Intelligence = () => {
                         <strong style={{ fontSize: '16px' }}>{getSignalTypeLabel(sig.type)}</strong>
                         <span style={{ marginLeft: '10px', fontSize: '12px', padding: '2px 6px', background: severityColor(sig.severity), color: 'white', borderRadius: '10px' }}>{sig.severity}</span>
                       </div>
-                      <div style={{ display: 'flex', gap: '10px' }}>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button onClick={() => handleSignalAction(sig.signal_id, 'verify')} style={{ padding: '4px 10px', background: '#64748b', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>🔍 Verify</button>
                         <button onClick={() => handleSignalAction(sig.signal_id, 'ack')} style={{ padding: '4px 10px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Acknowledge</button>
-                        <button onClick={() => handleSignalAction(sig.signal_id, 'resolve')} style={{ padding: '4px 10px', background: '#22c55e', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Resolve</button>
+                        <button onClick={() => handleSignalAction(sig.signal_id, 'resolve', true)} style={{ padding: '4px 10px', background: '#22c55e', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Resolve</button>
                       </div>
                     </div>
                     <p style={{ margin: 0, fontSize: '14px', color: '#475569' }}>{sig.message}</p>
                     {sig.entity_id && <p style={{ margin: '5px 0 0', fontSize: '12px', color: '#94a3b8' }}>Entity: {sig.entity_id}</p>}
+                    {sig.details?.sku && <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#94a3b8' }}>SKU: {sig.details.sku}</p>}
+                    {sig.details?.current_stock !== undefined && (
+                      <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#94a3b8' }}>
+                        Stock: {sig.details.current_stock} (Threshold: {sig.details.threshold || 20})
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -262,19 +291,71 @@ const Intelligence = () => {
             <button onClick={handleRunAll} style={{ ...controlBtnStyle, background: '#0f172a', color: 'white', border: 'none' }}>🔄 Run All Detections</button>
           </div>
           
-          <h3 style={{ marginTop: '30px', color: '#334155' }}>Pending Replenishment</h3>
+          <h3 style={{ marginTop: '30px', color: '#334155' }}>Pending Replenishment Orders</h3>
           {replenishmentOrders.length === 0 ? (
             <p style={{ color: '#64748b', fontSize: '14px' }}>No pending orders.</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {replenishmentOrders.map(order => (
-                <div key={order.order_id} style={{ padding: '10px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                    <strong>{order.order_id}</strong>
-                    <button onClick={() => handleApproveOrder(order.order_id)} style={{ padding: '2px 8px', background: '#22c55e', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '12px' }}>Approve</button>
+                <div key={order.order_id} style={{ padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <div>
+                      <strong style={{ fontSize: '14px' }}>{order.order_id}</strong>
+                      <span style={{
+                        marginLeft: '8px',
+                        padding: '2px 6px',
+                        background: order.priority === 'high' ? '#fee2e2' : '#e0e7ff',
+                        color: order.priority === 'high' ? '#dc2626' : '#4f46e5',
+                        borderRadius: '10px',
+                        fontSize: '10px'
+                      }}>
+                        {order.priority?.toUpperCase() || 'NORMAL'}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => handleApproveOrder(order.order_id)}
+                      style={{
+                        padding: '4px 12px',
+                        background: '#22c55e',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      ✓ Approve
+                    </button>
                   </div>
-                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>SKU: {order.items?.[0]?.sku} (Qty: {order.items?.[0]?.quantity})</p>
-                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>Warehouse: {order.warehouse_id}</p>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#475569' }}>
+                    📦 SKU: {order.items?.[0]?.sku || 'N/A'} × {order.items?.[0]?.quantity || 0} units
+                  </p>
+                  <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#64748b' }}>
+                    🏭 Warehouse: {order.warehouse_id}
+                  </p>
+                  {order.total_amount > 0 && (
+                    <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#059669' }}>
+                      💰 Total: ${order.total_amount?.toFixed(2) || '0.00'}
+                    </p>
+                  )}
+                  {order.calculation_details && (
+                    <div style={{ marginTop: '6px', padding: '6px', background: '#f1f5f9', borderRadius: '4px', fontSize: '11px' }}>
+                      <span style={{ color: '#64748b' }}>Current: {order.calculation_details.current_stock}</span>
+                      <span style={{ margin: '0 8px', color: '#cbd5e1' }}>|</span>
+                      <span style={{ color: '#64748b' }}>Threshold: {order.calculation_details.reorder_threshold}</span>
+                      <span style={{ margin: '0 8px', color: '#cbd5e1' }}>|</span>
+                      <span style={{ color: '#059669' }}>Reorder Qty: {order.calculation_details.reorder_quantity_used}</span>
+                    </div>
+                  )}
+                  {order.triggered_by_signal && (
+                    <p style={{ margin: '4px 0 0', fontSize: '11px', color: '#94a3b8' }}>
+                      Triggered by: {order.triggered_by_signal}
+                    </p>
+                  )}
+                  <p style={{ margin: '4px 0 0', fontSize: '10px', color: '#94a3b8' }}>
+                    Created: {order.created_at ? new Date(order.created_at).toLocaleString() : 'N/A'}
+                  </p>
                 </div>
               ))}
             </div>

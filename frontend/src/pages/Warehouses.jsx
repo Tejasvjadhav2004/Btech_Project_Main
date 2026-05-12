@@ -43,14 +43,14 @@ const Warehouses = () => {
                     <td style={{ padding: '15px', fontWeight: 'bold' }}>{wh.warehouse_id}</td>
                     <td style={{ padding: '15px' }}>{wh.name}</td>
                     <td style={{ padding: '15px' }}>
-                      {wh.location ? `${wh.location.latitude?.toFixed(2)}, ${wh.location.longitude?.toFixed(2)}` : 'N/A'}
+                      {wh.location ? `${wh.location.city || 'Unknown'}, ${wh.location.country || 'India'}` : 'N/A'}
                     </td>
                     <td style={{ padding: '15px' }}>
                       <div style={{ width: '100%', backgroundColor: '#e2e8f0', borderRadius: '4px', height: '10px', overflow: 'hidden', marginTop: '5px' }}>
-                        <div style={{ width: `${(wh.current_utilization || 0) / (wh.total_capacity || 1) * 100}%`, backgroundColor: '#3b82f6', height: '100%' }}></div>
+                        <div style={{ width: `${(wh.current_utilization || 0) / (wh.capacity || 1) * 100}%`, backgroundColor: '#3b82f6', height: '100%' }}></div>
                       </div>
                       <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
-                        {wh.current_utilization || 0} / {wh.total_capacity || 1000} utilized
+                        {wh.current_utilization || 0} / {wh.capacity || 1000} utilized
                       </div>
                     </td>
                   </tr>

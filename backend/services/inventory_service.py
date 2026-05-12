@@ -13,7 +13,13 @@ class InventoryService:
     """Service for inventory management with reservation support"""
     
     def __init__(self):
-        self.db = mongodb.get_database()
+        # Don't cache database reference - get it dynamically each time
+        pass
+    
+    @property
+    def db(self):
+        """Get database connection dynamically"""
+        return mongodb.get_database()
     
     def get_inventory(self, sku: str = None, location_id: str = None, location_type: str = None) -> List[Dict[str, Any]]:
         """Get inventory with optional filters"""
@@ -35,18 +41,19 @@ class InventoryService:
             "sku": sku,
             "location_id": location_id
         })
-        
+
         if not inventory:
             return 0
-        
-        quantity = inventory.get("quantity", 0)
+
+        # Use 'current_stock' or 'quantity' - both should be in sync
+        quantity = inventory.get("current_stock", inventory.get("quantity", 0))
         reserved = inventory.get("reserved_stock", 0)
         return max(0, quantity - reserved)
-    
+
     def check_stock_availability(self, sku: str, location_id: str, quantity: int) -> Tuple[bool, Dict[str, Any]]:
         """
         Check if sufficient stock is available.
-        
+
         Returns:
             Tuple of (is_available, details)
         """
@@ -54,17 +61,18 @@ class InventoryService:
             "sku": sku,
             "location_id": location_id
         })
-        
+
         if not inventory:
             return False, {
                 "error": "inventory_not_found",
                 "message": f"No inventory record for SKU {sku} at {location_id}"
             }
-        
-        total = inventory.get("quantity", 0)
+
+        # Use 'current_stock' or 'quantity' - both should be in sync
+        total = inventory.get("current_stock", inventory.get("quantity", 0))
         reserved = inventory.get("reserved_stock", 0)
         available = total - reserved
-        
+
         details = {
             "sku": sku,
             "location_id": location_id,
@@ -74,7 +82,7 @@ class InventoryService:
             "requested_quantity": quantity,
             "is_sufficient": available >= quantity
         }
-        
+
         return available >= quantity, details
     
     def allocate_inventory(
@@ -372,5 +380,35 @@ class InventoryService:
         
         # Event trigger: Check inventory health after restock
         self._trigger_inventory_check(sku, location_id)
-        
+
         return updated_inventory
+
+    def get_store_inventory_allocation(self, sku: str, store_id: str) -> Dict[str, Any]:
+        """
+        Get inventory allocation for a product at a store.
+        Uses the product's store allocation data from CSV.
+        """
+        # Get product data
+        product = self.db.products.find_one({"sku": sku})
+        if not product:
+            return {"error": "Product not found"}
+
+        # Get store allocations from product
+        allocations = product.get("store_allocations", {})
+        allocation_pct = allocations.get(store_id, 0)
+
+        # Get warehouse stock
+        primary_warehouse = product.get("primary_warehouse")
+        warehouse_stock = self.get_available_stock(sku, primary_warehouse)
+
+        # Calculate store allocation
+        store_quantity = int(warehouse_stock * allocation_pct * 0.5)
+
+        return {
+            "sku": sku,
+            "store_id": store_id,
+            "allocation_percentage": allocation_pct,
+            "warehouse_stock": warehouse_stock,
+            "allocated_quantity": store_quantity,
+            "available_stock": store_quantity
+        }

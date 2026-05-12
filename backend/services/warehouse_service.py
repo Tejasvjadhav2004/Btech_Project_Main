@@ -10,87 +10,40 @@ import math
 logger = logging.getLogger(__name__)
 
 
-# Default coordinates for major Indian cities (fallback when coordinates not available)
-CITY_COORDINATES = {
-    "Mumbai": {"lat": 19.0760, "lon": 72.8777},
-    "Delhi": {"lat": 28.6139, "lon": 77.2090},
-    "Bangalore": {"lat": 12.9716, "lon": 77.5946},
-    "Chennai": {"lat": 13.0827, "lon": 80.2707},
-    "Kolkata": {"lat": 22.5726, "lon": 88.3639},
-    "Hyderabad": {"lat": 17.3850, "lon": 78.4867},
-    "Pune": {"lat": 18.5204, "lon": 73.8567},
-    "Ahmedabad": {"lat": 23.0225, "lon": 72.5714},
-    "Jaipur": {"lat": 26.9124, "lon": 75.7873},
-    "Lucknow": {"lat": 26.8467, "lon": 80.9462},
-    "Surat": {"lat": 21.1702, "lon": 72.8311},
-    "Kanpur": {"lat": 26.4499, "lon": 80.3319},
-    "Nagpur": {"lat": 21.1458, "lon": 79.0882},
-    "Indore": {"lat": 22.7196, "lon": 75.8577},
-    "Thane": {"lat": 19.2183, "lon": 72.9781},
-    "Bhopal": {"lat": 23.2599, "lon": 77.4126},
-    "Visakhapatnam": {"lat": 17.6868, "lon": 83.2185},
-    "Patna": {"lat": 25.5941, "lon": 85.1376},
-    "Vadodara": {"lat": 22.3072, "lon": 73.1812},
-    "Ghaziabad": {"lat": 28.6692, "lon": 77.4538},
-    "Ludhiana": {"lat": 30.9010, "lon": 75.8573},
-    "Agra": {"lat": 27.1767, "lon": 78.0081},
-    "Nashik": {"lat": 19.9975, "lon": 73.7898},
-    "Faridabad": {"lat": 28.4089, "lon": 77.3178},
-    "Meerut": {"lat": 28.9845, "lon": 77.7064},
-    "Rajkot": {"lat": 22.3039, "lon": 70.8022},
-    "Varanasi": {"lat": 25.3176, "lon": 82.9739},
-    "Srinagar": {"lat": 34.0837, "lon": 74.7973},
-    "Aurangabad": {"lat": 19.8762, "lon": 75.3433},
-    "Dhanbad": {"lat": 23.7957, "lon": 86.4304},
-    "Amritsar": {"lat": 31.6340, "lon": 74.8723},
-    "Allahabad": {"lat": 25.4358, "lon": 81.8463},
-    "Ranchi": {"lat": 23.3441, "lon": 85.3096},
-    "Coimbatore": {"lat": 11.0168, "lon": 76.9558},
-    "Jabalpur": {"lat": 23.1815, "lon": 79.9864},
-    "Gwalior": {"lat": 26.2183, "lon": 78.1828},
-    "Vijayawada": {"lat": 16.5062, "lon": 80.6480},
-    "Jodhpur": {"lat": 26.2389, "lon": 73.0243},
-    "Madurai": {"lat": 9.9252, "lon": 78.1198},
-    "Raipur": {"lat": 21.2514, "lon": 81.6296},
-    "Kochi": {"lat": 9.9312, "lon": 76.2673},
-    "Chandigarh": {"lat": 30.7333, "lon": 76.7794},
-    "Guwahati": {"lat": 26.1445, "lon": 91.7362},
-    "Solapur": {"lat": 17.6599, "lon": 75.9064},
-    "Hubli": {"lat": 15.3647, "lon": 75.1240},
-    "Tiruchirappalli": {"lat": 10.7905, "lon": 78.7047},
-    "Bareilly": {"lat": 28.3670, "lon": 79.4304},
-    "Mysore": {"lat": 12.2958, "lon": 76.6394},
-    "Gurgaon": {"lat": 28.4595, "lon": 77.0266},
-    "Noida": {"lat": 28.5355, "lon": 77.3910},
-}
-
-
 class WarehouseService:
     """Service for warehouse selection and management"""
     
     def __init__(self):
-        self.db = mongodb.get_database()
+        # Don't cache database reference - get it dynamically each time
+        pass
+    
+    @property
+    def db(self):
+        """Get database connection dynamically"""
+        return mongodb.get_database()
     
     def get_coordinates(self, location: Dict[str, Any]) -> Tuple[float, float]:
         """
         Get coordinates for a location.
-        Uses stored coordinates if available, otherwise falls back to city mapping.
+        Uses stored coordinates from database, falls back to city mapping if needed.
         """
-        # Check if coordinates are stored
+        # Check if coordinates are stored in location object
         if location.get("coordinates"):
             coords = location["coordinates"]
             if "lat" in coords and "lon" in coords:
                 return coords["lat"], coords["lon"]
-        
-        # Fallback to city mapping
+
+        # Get coordinates from database for city
         city = location.get("city", "")
-        if city in CITY_COORDINATES:
-            coords = CITY_COORDINATES[city]
-            return coords["lat"], coords["lon"]
-        
+        if city:
+            # Query database for city coordinates
+            location_doc = self.db.locations.find_one({"city": city})
+            if location_doc:
+                return location_doc["lat"], location_doc["lng"]
+
         # Default to Mumbai if city not found
         logger.warning(f"Coordinates not found for city: {city}, using Mumbai as default")
-        return CITY_COORDINATES["Mumbai"]["lat"], CITY_COORDINATES["Mumbai"]["lon"]
+        return 19.0760, 72.8777
     
     def calculate_distance(self, lat1: float, lon1: float, lat2: float, lon2: float) -> float:
         """

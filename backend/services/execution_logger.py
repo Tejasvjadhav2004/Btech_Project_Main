@@ -36,8 +36,23 @@ class ExecutionLogger:
     COLLECTION_NAME = "execution_logs"
     
     def __init__(self):
-        self.db = mongodb.get_database()
-        self._ensure_collection()
+        # Don't cache database reference - get it dynamically each time
+        pass
+    
+    @property
+    def db(self):
+        """Get database connection dynamically"""
+        return mongodb.get_database()
+    
+    def _ensure_collection(self):
+        """Ensure event_logs collection exists - called dynamically when needed"""
+        db = mongodb.get_database()
+        collection_name = "event_logs"
+        
+        if collection_name not in db.list_collection_names():
+            db[collection_name].create_index("event_id", unique=True)
+            db[collection_name].create_index("timestamp")
+            logger.info(f"Created indexes for {collection_name} collection")
     
     def _ensure_collection(self):
         """Ensure the execution_logs collection exists with proper indexes"""

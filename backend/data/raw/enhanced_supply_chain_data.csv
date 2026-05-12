@@ -1,0 +1,347 @@
+sku,product_category,location_id,location_city,location_type,current_stock,available_stock,reserved_stock,incoming_stock,damaged_stock,store_capacity,product_price,supplier_name,primary_warehouse_id,secondary_warehouse_id,reorder_threshold,reorder_quantity,inventory_status,last_restock_date
+SKU0000,haircare,ST008,Ahmedabad,store,44,44,0,14,2,15000,458.77,Supplier 4,WH001,WH003,11,22,Low Stock,2026-02-10
+SKU0000,haircare,ST004,Kolkata,store,50,50,0,13,2,22000,458.77,Supplier 4,WH001,WH003,12,25,Healthy,2026-04-30
+SKU0000,haircare,ST007,Pune,store,33,33,0,12,1,18000,458.77,Supplier 1,WH001,WH003,8,16,Low Stock,2026-03-14
+SKU0000,haircare,ST001,Mumbai,store,49,49,0,34,2,15000,458.77,Supplier 2,WH001,WH003,12,24,Low Stock,2026-03-10
+SKU0001,haircare,ST005,Chennai,store,37,37,0,50,3,25000,157.47,Supplier 2,WH001,WH004,9,18,Low Stock,2026-03-16
+SKU0001,haircare,ST008,Ahmedabad,store,27,27,0,25,5,15000,157.47,Supplier 4,WH001,WH004,7,14,Low Stock,2026-05-09
+SKU0001,haircare,ST001,Mumbai,store,52,52,0,29,1,15000,157.47,Supplier 5,WH001,WH004,13,26,Healthy,2026-04-27
+SKU0001,haircare,ST006,Hyderabad,store,36,36,0,50,0,20000,157.47,Supplier 3,WH001,WH004,9,18,Low Stock,2026-03-24
+SKU0001,haircare,ST007,Pune,store,25,25,0,16,4,18000,157.47,Supplier 2,WH001,WH004,6,12,Low Stock,2026-05-05
+SKU0002,haircare,ST001,Mumbai,store,46,46,0,46,2,15000,131.38,Supplier 5,WH001,WH005,12,23,Low Stock,2026-03-10
+SKU0002,haircare,ST007,Pune,store,30,30,0,31,4,18000,131.38,Supplier 3,WH001,WH005,8,15,Low Stock,2026-04-16
+SKU0003,haircare,ST001,Mumbai,store,36,36,0,34,5,15000,479.16,Supplier 4,WH001,WH002,9,18,Low Stock,2026-04-24
+SKU0003,haircare,ST008,Ahmedabad,store,46,46,0,45,4,15000,479.16,Supplier 5,WH001,WH002,12,23,Low Stock,2026-03-12
+SKU0004,haircare,ST007,Pune,store,27,27,0,9,2,18000,358.6,Supplier 3,WH001,WH003,7,14,Low Stock,2026-03-22
+SKU0004,haircare,ST001,Mumbai,store,27,27,0,3,4,15000,358.6,Supplier 5,WH001,WH003,7,14,Low Stock,2026-02-10
+SKU0004,haircare,ST008,Ahmedabad,store,36,36,0,29,0,15000,358.6,Supplier 2,WH001,WH003,9,18,Low Stock,2026-04-04
+SKU0005,haircare,ST008,Ahmedabad,store,50,50,0,20,1,15000,90.78,Supplier 1,WH001,WH004,12,25,Healthy,2026-04-04
+SKU0005,haircare,ST007,Pune,store,45,45,0,11,0,18000,90.78,Supplier 1,WH001,WH004,11,22,Low Stock,2026-02-17
+SKU0005,haircare,ST001,Mumbai,store,37,37,0,39,3,15000,90.78,Supplier 5,WH001,WH004,9,18,Low Stock,2026-05-04
+SKU0006,haircare,ST006,Hyderabad,store,35,35,0,1,1,20000,157.34,Supplier 3,WH001,WH004,9,18,Low Stock,2026-03-26
+SKU0006,haircare,ST007,Pune,store,46,46,0,23,3,18000,157.34,Supplier 4,WH001,WH004,12,23,Low Stock,2026-02-17
+SKU0006,haircare,ST001,Mumbai,store,26,26,0,47,1,15000,157.34,Supplier 5,WH001,WH004,6,13,Low Stock,2026-05-01
+SKU0006,haircare,ST008,Ahmedabad,store,31,31,0,9,5,15000,157.34,Supplier 1,WH001,WH004,8,16,Low Stock,2026-04-21
+SKU0007,haircare,ST007,Pune,store,31,31,0,43,5,18000,104.64,Supplier 3,WH001,WH004,8,16,Low Stock,2026-03-05
+SKU0007,haircare,ST008,Ahmedabad,store,46,46,0,40,4,15000,104.64,Supplier 2,WH001,WH004,12,23,Low Stock,2026-04-23
+SKU0008,haircare,ST004,Kolkata,store,39,39,0,19,0,22000,295.63,Supplier 2,WH001,WH005,10,20,Low Stock,2026-05-03
+SKU0008,haircare,ST007,Pune,store,43,43,0,21,5,18000,295.63,Supplier 4,WH001,WH005,11,22,Low Stock,2026-03-14
+SKU0008,haircare,ST001,Mumbai,store,46,46,0,3,2,15000,295.63,Supplier 5,WH001,WH005,12,23,Low Stock,2026-04-13
+SKU0008,haircare,ST008,Ahmedabad,store,55,55,0,2,3,15000,295.63,Supplier 5,WH001,WH005,14,28,Healthy,2026-05-02
+SKU0009,haircare,ST002,Delhi,store,47,47,0,5,4,20000,235.32,Supplier 4,WH001,WH002,12,24,Low Stock,2026-03-27
+SKU0009,haircare,ST005,Chennai,store,41,41,0,46,0,25000,235.32,Supplier 2,WH001,WH002,10,20,Low Stock,2026-03-10
+SKU0009,haircare,ST008,Ahmedabad,store,47,47,0,26,0,15000,235.32,Supplier 3,WH001,WH002,12,24,Low Stock,2026-05-09
+SKU0009,haircare,ST001,Mumbai,store,32,32,0,22,1,15000,235.32,Supplier 5,WH001,WH002,8,16,Low Stock,2026-04-27
+SKU0009,haircare,ST007,Pune,store,32,32,0,46,1,18000,235.32,Supplier 2,WH001,WH002,8,16,Low Stock,2026-04-17
+SKU0010,haircare,ST001,Mumbai,store,55,55,0,45,5,15000,251.93,Supplier 5,WH001,WH003,14,28,Healthy,2026-04-10
+SKU0010,haircare,ST008,Ahmedabad,store,28,28,0,37,4,15000,251.93,Supplier 1,WH001,WH003,7,14,Low Stock,2026-03-28
+SKU0011,haircare,ST005,Chennai,store,37,37,0,48,1,25000,309.6,Supplier 1,WH001,WH003,9,18,Low Stock,2026-04-25
+SKU0011,haircare,ST002,Delhi,store,34,34,0,43,4,20000,309.6,Supplier 1,WH001,WH003,8,17,Low Stock,2026-04-27
+SKU0011,haircare,ST008,Ahmedabad,store,34,34,0,18,1,15000,309.6,Supplier 2,WH001,WH003,8,17,Low Stock,2026-03-21
+SKU0011,haircare,ST001,Mumbai,store,45,45,0,35,3,15000,309.6,Supplier 2,WH001,WH003,11,22,Low Stock,2026-02-17
+SKU0011,haircare,ST007,Pune,store,35,35,0,44,0,18000,309.6,Supplier 2,WH001,WH003,9,18,Low Stock,2026-03-31
+SKU0012,haircare,ST003,Bangalore,store,53,53,0,17,0,18000,454.02,Supplier 2,WH001,WH005,13,26,Healthy,2026-03-28
+SKU0012,haircare,ST008,Ahmedabad,store,49,49,0,2,1,15000,454.02,Supplier 3,WH001,WH005,12,24,Low Stock,2026-03-03
+SKU0012,haircare,ST001,Mumbai,store,33,33,0,2,3,15000,454.02,Supplier 2,WH001,WH005,8,16,Low Stock,2026-04-07
+SKU0012,haircare,ST007,Pune,store,43,43,0,42,5,18000,454.02,Supplier 5,WH001,WH005,11,22,Low Stock,2026-03-23
+SKU0012,haircare,ST004,Kolkata,store,49,49,0,50,3,22000,454.02,Supplier 5,WH001,WH005,12,24,Low Stock,2026-04-06
+SKU0013,haircare,ST006,Hyderabad,store,26,26,0,14,0,20000,253.98,Supplier 4,WH001,WH002,6,13,Low Stock,2026-04-23
+SKU0013,haircare,ST001,Mumbai,store,40,40,0,25,0,15000,253.98,Supplier 2,WH001,WH002,10,20,Low Stock,2026-03-17
+SKU0013,haircare,ST007,Pune,store,47,47,0,42,5,18000,253.98,Supplier 4,WH001,WH002,12,24,Low Stock,2026-04-05
+SKU0013,haircare,ST008,Ahmedabad,store,36,36,0,46,1,15000,253.98,Supplier 5,WH001,WH002,9,18,Low Stock,2026-04-03
+SKU0014,haircare,ST007,Pune,store,38,38,0,33,0,18000,112.14,Supplier 1,WH001,WH005,10,19,Low Stock,2026-03-03
+SKU0014,haircare,ST001,Mumbai,store,28,28,0,45,5,15000,112.14,Supplier 1,WH001,WH005,7,14,Low Stock,2026-02-09
+SKU0014,haircare,ST008,Ahmedabad,store,40,40,0,18,3,15000,112.14,Supplier 3,WH001,WH005,10,20,Low Stock,2026-02-19
+SKU0015,haircare,ST005,Chennai,store,51,51,0,22,3,25000,111.39,Supplier 2,WH001,WH004,13,26,Healthy,2026-04-30
+SKU0015,haircare,ST002,Delhi,store,42,42,0,50,1,20000,111.39,Supplier 5,WH001,WH004,10,21,Low Stock,2026-03-05
+SKU0015,haircare,ST008,Ahmedabad,store,49,49,0,26,5,15000,111.39,Supplier 4,WH001,WH004,12,24,Low Stock,2026-04-17
+SKU0015,haircare,ST001,Mumbai,store,54,54,0,44,0,15000,111.39,Supplier 3,WH001,WH004,14,27,Healthy,2026-02-24
+SKU0015,haircare,ST007,Pune,store,28,28,0,0,1,18000,111.39,Supplier 3,WH001,WH004,7,14,Low Stock,2026-04-19
+SKU0016,haircare,ST001,Mumbai,store,44,44,0,9,3,15000,303.08,Supplier 4,WH001,WH003,11,22,Low Stock,2026-03-31
+SKU0016,haircare,ST002,Delhi,store,30,30,0,8,1,20000,303.08,Supplier 2,WH001,WH003,8,15,Low Stock,2026-03-07
+SKU0016,haircare,ST007,Pune,store,38,38,0,30,0,18000,303.08,Supplier 2,WH001,WH003,10,19,Low Stock,2026-03-25
+SKU0016,haircare,ST008,Ahmedabad,store,50,50,0,4,4,15000,303.08,Supplier 3,WH001,WH003,12,25,Healthy,2026-04-17
+SKU0017,haircare,ST008,Ahmedabad,store,48,48,0,26,1,15000,53.19,Supplier 2,WH001,WH002,12,24,Low Stock,2026-03-29
+SKU0017,haircare,ST003,Bangalore,store,29,29,0,49,4,18000,53.19,Supplier 3,WH001,WH002,7,14,Low Stock,2026-03-26
+SKU0017,haircare,ST001,Mumbai,store,55,55,0,44,3,15000,53.19,Supplier 3,WH001,WH002,14,28,Healthy,2026-04-11
+SKU0017,haircare,ST007,Pune,store,43,43,0,19,2,18000,53.19,Supplier 3,WH001,WH002,11,22,Low Stock,2026-03-04
+SKU0018,haircare,ST001,Mumbai,store,28,28,0,33,3,15000,488.96,Supplier 2,WH001,WH005,7,14,Low Stock,2026-04-07
+SKU0018,haircare,ST007,Pune,store,31,31,0,28,3,18000,488.96,Supplier 5,WH001,WH005,8,16,Low Stock,2026-04-13
+SKU0018,haircare,ST008,Ahmedabad,store,29,29,0,6,0,15000,488.96,Supplier 4,WH001,WH005,7,14,Low Stock,2026-02-11
+SKU0019,haircare,ST007,Pune,store,44,44,0,8,4,18000,444.56,Supplier 5,WH001,WH005,11,22,Low Stock,2026-03-19
+SKU0019,haircare,ST001,Mumbai,store,26,26,0,45,4,15000,444.56,Supplier 3,WH001,WH005,6,13,Low Stock,2026-02-20
+SKU0020,haircare,ST003,Bangalore,store,54,54,0,3,3,18000,359.15,Supplier 3,WH002,WH001,14,27,Healthy,2026-03-06
+SKU0020,haircare,ST001,Mumbai,store,31,31,0,50,5,15000,359.15,Supplier 5,WH002,WH001,8,16,Low Stock,2026-03-09
+SKU0020,haircare,ST002,Delhi,store,47,47,0,9,1,20000,359.15,Supplier 3,WH002,WH001,12,24,Low Stock,2026-04-17
+SKU0021,haircare,ST006,Hyderabad,store,27,27,0,26,5,20000,273.18,Supplier 4,WH002,WH001,7,14,Low Stock,2026-03-25
+SKU0021,haircare,ST002,Delhi,store,47,47,0,2,5,20000,273.18,Supplier 3,WH002,WH001,12,24,Low Stock,2026-03-08
+SKU0021,haircare,ST008,Ahmedabad,store,26,26,0,4,2,15000,273.18,Supplier 3,WH002,WH001,6,13,Low Stock,2026-02-25
+SKU0022,haircare,ST002,Delhi,store,37,37,0,19,1,20000,485.42,Supplier 3,WH002,WH004,9,18,Low Stock,2026-04-12
+SKU0022,haircare,ST008,Ahmedabad,store,30,30,0,34,1,15000,485.42,Supplier 2,WH002,WH004,8,15,Low Stock,2026-03-04
+SKU0023,haircare,ST006,Hyderabad,store,47,47,0,39,0,20000,170.54,Supplier 2,WH002,WH004,12,24,Low Stock,2026-02-20
+SKU0023,haircare,ST002,Delhi,store,38,38,0,42,2,20000,170.54,Supplier 5,WH002,WH004,10,19,Low Stock,2026-04-03
+SKU0024,haircare,ST004,Kolkata,store,26,26,0,1,2,22000,306.19,Supplier 3,WH002,WH004,6,13,Low Stock,2026-04-14
+SKU0024,haircare,ST007,Pune,store,32,32,0,48,2,18000,306.19,Supplier 2,WH002,WH004,8,16,Low Stock,2026-04-30
+SKU0024,haircare,ST002,Delhi,store,46,46,0,19,0,20000,306.19,Supplier 3,WH002,WH004,12,23,Low Stock,2026-03-02
+SKU0025,skincare,ST004,Kolkata,store,37,37,0,2,4,22000,206.49,Supplier 1,WH002,WH004,9,18,Low Stock,2026-04-03
+SKU0025,skincare,ST002,Delhi,store,35,35,0,37,3,20000,206.49,Supplier 1,WH002,WH004,9,18,Low Stock,2026-03-12
+SKU0026,skincare,ST002,Delhi,store,39,39,0,46,0,20000,631.06,Supplier 4,WH002,WH004,10,20,Low Stock,2026-04-14
+SKU0026,skincare,ST005,Chennai,store,19,19,0,1,1,25000,631.06,Supplier 4,WH002,WH004,5,10,Critical,2026-04-19
+SKU0026,skincare,ST008,Ahmedabad,store,18,18,0,5,4,15000,631.06,Supplier 2,WH002,WH004,4,9,Critical,2026-03-03
+SKU0026,skincare,ST006,Hyderabad,store,33,33,0,18,1,20000,631.06,Supplier 4,WH002,WH004,8,16,Low Stock,2026-03-11
+SKU0026,skincare,ST007,Pune,store,17,17,0,10,2,18000,631.06,Supplier 3,WH002,WH004,4,8,Critical,2026-02-11
+SKU0027,skincare,ST003,Bangalore,store,26,26,0,38,5,18000,160.16,Supplier 1,WH002,WH003,6,13,Low Stock,2026-03-19
+SKU0027,skincare,ST001,Mumbai,store,16,16,0,42,1,15000,160.16,Supplier 4,WH002,WH003,4,8,Critical,2026-02-14
+SKU0027,skincare,ST002,Delhi,store,31,31,0,46,0,20000,160.16,Supplier 5,WH002,WH003,8,16,Low Stock,2026-04-13
+SKU0028,skincare,ST003,Bangalore,store,28,28,0,11,3,18000,235.97,Supplier 5,WH002,WH003,7,14,Low Stock,2026-02-20
+SKU0028,skincare,ST002,Delhi,store,25,25,0,32,0,20000,235.97,Supplier 1,WH002,WH003,6,12,Low Stock,2026-03-05
+SKU0029,skincare,ST003,Bangalore,store,37,37,0,14,0,18000,386.45,Supplier 5,WH002,WH001,9,18,Low Stock,2026-02-17
+SKU0029,skincare,ST002,Delhi,store,34,34,0,45,0,20000,386.45,Supplier 2,WH002,WH001,8,17,Low Stock,2026-03-31
+SKU0029,skincare,ST005,Chennai,store,21,21,0,21,1,25000,386.45,Supplier 4,WH002,WH001,5,10,Low Stock,2026-04-29
+SKU0029,skincare,ST008,Ahmedabad,store,18,18,0,3,5,15000,386.45,Supplier 2,WH002,WH001,4,9,Critical,2026-02-20
+SKU0029,skincare,ST004,Kolkata,store,39,39,0,40,1,22000,386.45,Supplier 4,WH002,WH001,10,20,Low Stock,2026-02-27
+SKU0030,skincare,ST006,Hyderabad,store,20,20,0,3,4,20000,179.2,Supplier 4,WH002,WH005,5,10,Low Stock,2026-04-16
+SKU0030,skincare,ST004,Kolkata,store,44,44,0,17,4,22000,179.2,Supplier 1,WH002,WH005,11,22,Low Stock,2026-05-08
+SKU0030,skincare,ST002,Delhi,store,42,42,0,2,0,20000,179.2,Supplier 1,WH002,WH005,10,21,Low Stock,2026-04-30
+SKU0030,skincare,ST005,Chennai,store,43,43,0,8,5,25000,179.2,Supplier 5,WH002,WH005,11,22,Low Stock,2026-03-20
+SKU0031,skincare,ST002,Delhi,store,28,28,0,41,2,20000,544.19,Supplier 1,WH002,WH004,7,14,Low Stock,2026-03-08
+SKU0031,skincare,ST008,Ahmedabad,store,25,25,0,48,1,15000,544.19,Supplier 3,WH002,WH004,6,12,Low Stock,2026-03-14
+SKU0032,skincare,ST007,Pune,store,45,45,0,47,2,18000,324.66,Supplier 1,WH002,WH003,11,22,Low Stock,2026-02-28
+SKU0032,skincare,ST002,Delhi,store,35,35,0,14,1,20000,324.66,Supplier 1,WH002,WH003,9,18,Low Stock,2026-04-16
+SKU0032,skincare,ST008,Ahmedabad,store,29,29,0,30,2,15000,324.66,Supplier 5,WH002,WH003,7,14,Low Stock,2026-03-01
+SKU0033,skincare,ST002,Delhi,store,28,28,0,21,1,20000,178.47,Supplier 5,WH002,WH004,7,14,Low Stock,2026-02-11
+SKU0033,skincare,ST005,Chennai,store,25,25,0,1,4,25000,178.47,Supplier 2,WH002,WH004,6,12,Low Stock,2026-03-30
+SKU0033,skincare,ST006,Hyderabad,store,22,22,0,6,3,20000,178.47,Supplier 5,WH002,WH004,6,11,Low Stock,2026-03-03
+SKU0033,skincare,ST007,Pune,store,37,37,0,49,4,18000,178.47,Supplier 5,WH002,WH004,9,18,Low Stock,2026-03-07
+SKU0033,skincare,ST004,Kolkata,store,20,20,0,41,2,22000,178.47,Supplier 3,WH002,WH004,5,10,Low Stock,2026-04-09
+SKU0034,skincare,ST003,Bangalore,store,29,29,0,0,5,18000,113.89,Supplier 3,WH002,WH001,7,14,Low Stock,2026-04-22
+SKU0034,skincare,ST007,Pune,store,36,36,0,50,4,18000,113.89,Supplier 4,WH002,WH001,9,18,Low Stock,2026-02-26
+SKU0034,skincare,ST002,Delhi,store,36,36,0,49,2,20000,113.89,Supplier 5,WH002,WH001,9,18,Low Stock,2026-05-01
+SKU0034,skincare,ST005,Chennai,store,32,32,0,6,2,25000,113.89,Supplier 2,WH002,WH001,8,16,Low Stock,2026-02-25
+SKU0035,skincare,ST002,Delhi,store,39,39,0,16,5,20000,227.13,Supplier 4,WH002,WH001,10,20,Low Stock,2026-05-01
+SKU0035,skincare,ST005,Chennai,store,22,22,0,31,3,25000,227.13,Supplier 4,WH002,WH001,6,11,Low Stock,2026-04-20
+SKU0035,skincare,ST001,Mumbai,store,21,21,0,17,4,15000,227.13,Supplier 5,WH002,WH001,5,10,Low Stock,2026-03-18
+SKU0035,skincare,ST006,Hyderabad,store,35,35,0,35,5,20000,227.13,Supplier 5,WH002,WH001,9,18,Low Stock,2026-02-17
+SKU0035,skincare,ST004,Kolkata,store,25,25,0,44,1,22000,227.13,Supplier 4,WH002,WH001,6,12,Low Stock,2026-03-08
+SKU0036,skincare,ST005,Chennai,store,28,28,0,30,2,25000,271.26,Supplier 3,WH002,WH001,7,14,Low Stock,2026-02-09
+SKU0036,skincare,ST001,Mumbai,store,34,34,0,37,3,15000,271.26,Supplier 2,WH002,WH001,8,17,Low Stock,2026-03-29
+SKU0036,skincare,ST002,Delhi,store,19,19,0,45,5,20000,271.26,Supplier 5,WH002,WH001,5,10,Critical,2026-04-24
+SKU0036,skincare,ST008,Ahmedabad,store,24,24,0,9,4,15000,271.26,Supplier 5,WH002,WH001,6,12,Low Stock,2026-02-27
+SKU0037,skincare,ST002,Delhi,store,26,26,0,20,4,20000,622.79,Supplier 2,WH002,WH005,6,13,Low Stock,2026-03-12
+SKU0037,skincare,ST005,Chennai,store,23,23,0,17,2,25000,622.79,Supplier 4,WH002,WH005,6,12,Low Stock,2026-03-23
+SKU0037,skincare,ST008,Ahmedabad,store,37,37,0,34,3,15000,622.79,Supplier 1,WH002,WH005,9,18,Low Stock,2026-03-04
+SKU0037,skincare,ST001,Mumbai,store,26,26,0,34,4,15000,622.79,Supplier 4,WH002,WH005,6,13,Low Stock,2026-02-11
+SKU0037,skincare,ST004,Kolkata,store,45,45,0,9,3,22000,622.79,Supplier 3,WH002,WH005,11,22,Low Stock,2026-03-24
+SKU0038,skincare,ST002,Delhi,store,17,17,0,6,1,20000,507.0,Supplier 4,WH002,WH003,4,8,Critical,2026-04-11
+SKU0038,skincare,ST008,Ahmedabad,store,25,25,0,50,1,15000,507.0,Supplier 1,WH002,WH003,6,12,Low Stock,2026-05-09
+SKU0038,skincare,ST001,Mumbai,store,38,38,0,50,1,15000,507.0,Supplier 1,WH002,WH003,10,19,Low Stock,2026-04-08
+SKU0038,skincare,ST006,Hyderabad,store,35,35,0,17,3,20000,507.0,Supplier 3,WH002,WH003,9,18,Low Stock,2026-02-23
+SKU0038,skincare,ST007,Pune,store,23,23,0,28,0,18000,507.0,Supplier 3,WH002,WH003,6,12,Low Stock,2026-05-05
+SKU0039,skincare,ST003,Bangalore,store,41,41,0,40,0,18000,500.6,Supplier 4,WH002,WH003,10,20,Low Stock,2026-03-09
+SKU0039,skincare,ST002,Delhi,store,27,27,0,44,1,20000,500.6,Supplier 5,WH002,WH003,7,14,Low Stock,2026-03-03
+SKU0040,skincare,ST003,Bangalore,store,41,41,0,50,2,18000,624.4,Supplier 4,WH003,WH001,10,20,Low Stock,2026-02-17
+SKU0040,skincare,ST004,Kolkata,store,22,22,0,11,0,22000,624.4,Supplier 4,WH003,WH001,6,11,Low Stock,2026-04-11
+SKU0040,skincare,ST005,Chennai,store,34,34,0,31,4,25000,624.4,Supplier 2,WH003,WH001,8,17,Low Stock,2026-03-09
+SKU0041,skincare,ST006,Hyderabad,store,31,31,0,16,4,20000,714.89,Supplier 5,WH003,WH005,8,16,Low Stock,2026-04-14
+SKU0041,skincare,ST003,Bangalore,store,45,45,0,48,4,18000,714.89,Supplier 4,WH003,WH005,11,22,Low Stock,2026-04-15
+SKU0041,skincare,ST005,Chennai,store,28,28,0,3,3,25000,714.89,Supplier 1,WH003,WH005,7,14,Low Stock,2026-03-13
+SKU0041,skincare,ST008,Ahmedabad,store,17,17,0,0,2,15000,714.89,Supplier 4,WH003,WH005,4,8,Critical,2026-03-28
+SKU0042,skincare,ST003,Bangalore,store,34,34,0,21,1,18000,772.03,Supplier 2,WH003,WH005,8,17,Low Stock,2026-03-07
+SKU0042,skincare,ST004,Kolkata,store,34,34,0,47,4,22000,772.03,Supplier 2,WH003,WH005,8,17,Low Stock,2026-03-05
+SKU0042,skincare,ST005,Chennai,store,33,33,0,50,0,25000,772.03,Supplier 3,WH003,WH005,8,16,Low Stock,2026-03-06
+SKU0042,skincare,ST001,Mumbai,store,26,26,0,30,5,15000,772.03,Supplier 2,WH003,WH005,6,13,Low Stock,2026-02-14
+SKU0043,skincare,ST003,Bangalore,store,31,31,0,22,2,18000,222.24,Supplier 3,WH003,WH002,8,16,Low Stock,2026-04-24
+SKU0043,skincare,ST001,Mumbai,store,18,18,0,9,2,15000,222.24,Supplier 5,WH003,WH002,4,9,Critical,2026-04-23
+SKU0044,skincare,ST003,Bangalore,store,36,36,0,40,0,18000,458.29,Supplier 4,WH003,WH002,9,18,Low Stock,2026-05-07
+SKU0044,skincare,ST007,Pune,store,42,42,0,18,2,18000,458.29,Supplier 4,WH003,WH002,10,21,Low Stock,2026-03-04
+SKU0044,skincare,ST001,Mumbai,store,31,31,0,36,4,15000,458.29,Supplier 4,WH003,WH002,8,16,Low Stock,2026-03-13
+SKU0045,skincare,ST003,Bangalore,store,20,20,0,39,2,18000,683.13,Supplier 1,WH003,WH002,5,10,Low Stock,2026-03-13
+SKU0045,skincare,ST002,Delhi,store,27,27,0,17,4,20000,683.13,Supplier 5,WH003,WH002,7,14,Low Stock,2026-04-26
+SKU0045,skincare,ST008,Ahmedabad,store,37,37,0,46,0,15000,683.13,Supplier 1,WH003,WH002,9,18,Low Stock,2026-04-28
+SKU0045,skincare,ST001,Mumbai,store,38,38,0,46,1,15000,683.13,Supplier 4,WH003,WH002,10,19,Low Stock,2026-02-14
+SKU0045,skincare,ST006,Hyderabad,store,39,39,0,25,5,20000,683.13,Supplier 1,WH003,WH002,10,20,Low Stock,2026-04-10
+SKU0046,skincare,ST003,Bangalore,store,28,28,0,38,0,18000,782.57,Supplier 1,WH003,WH001,7,14,Low Stock,2026-03-28
+SKU0046,skincare,ST004,Kolkata,store,32,32,0,45,5,22000,782.57,Supplier 3,WH003,WH001,8,16,Low Stock,2026-03-17
+SKU0047,skincare,ST003,Bangalore,store,35,35,0,0,4,18000,155.31,Supplier 2,WH003,WH002,9,18,Low Stock,2026-04-03
+SKU0047,skincare,ST007,Pune,store,24,24,0,22,5,18000,155.31,Supplier 1,WH003,WH002,6,12,Low Stock,2026-02-19
+SKU0048,skincare,ST003,Bangalore,store,19,19,0,12,0,18000,580.11,Supplier 5,WH003,WH002,5,10,Critical,2026-03-13
+SKU0048,skincare,ST005,Chennai,store,15,15,0,32,3,25000,580.11,Supplier 5,WH003,WH002,4,8,Critical,2026-04-25
+SKU0048,skincare,ST001,Mumbai,store,36,36,0,43,2,15000,580.11,Supplier 2,WH003,WH002,9,18,Low Stock,2026-02-17
+SKU0048,skincare,ST006,Hyderabad,store,27,27,0,42,0,20000,580.11,Supplier 4,WH003,WH002,7,14,Low Stock,2026-03-28
+SKU0048,skincare,ST004,Kolkata,store,44,44,0,22,3,22000,580.11,Supplier 3,WH003,WH002,11,22,Low Stock,2026-02-22
+SKU0049,skincare,ST003,Bangalore,store,28,28,0,50,1,18000,583.01,Supplier 2,WH003,WH005,7,14,Low Stock,2026-05-09
+SKU0049,skincare,ST001,Mumbai,store,25,25,0,18,2,15000,583.01,Supplier 5,WH003,WH005,6,12,Low Stock,2026-02-21
+SKU0049,skincare,ST002,Delhi,store,22,22,0,22,1,20000,583.01,Supplier 4,WH003,WH005,6,11,Low Stock,2026-03-01
+SKU0049,skincare,ST008,Ahmedabad,store,39,39,0,7,2,15000,583.01,Supplier 3,WH003,WH005,10,20,Low Stock,2026-03-03
+SKU0050,skincare,ST003,Bangalore,store,36,36,0,40,5,18000,345.88,Supplier 2,WH003,WH001,9,18,Low Stock,2026-04-24
+SKU0050,skincare,ST005,Chennai,store,25,25,0,25,4,25000,345.88,Supplier 4,WH003,WH001,6,12,Low Stock,2026-04-02
+SKU0050,skincare,ST008,Ahmedabad,store,32,32,0,39,2,15000,345.88,Supplier 2,WH003,WH001,8,16,Low Stock,2026-03-11
+SKU0050,skincare,ST001,Mumbai,store,15,15,0,30,0,15000,345.88,Supplier 1,WH003,WH001,4,8,Critical,2026-03-03
+SKU0050,skincare,ST006,Hyderabad,store,17,17,0,1,0,20000,345.88,Supplier 3,WH003,WH001,4,8,Critical,2026-03-26
+SKU0051,skincare,ST003,Bangalore,store,36,36,0,42,3,18000,359.32,Supplier 5,WH003,WH002,9,18,Low Stock,2026-04-15
+SKU0051,skincare,ST002,Delhi,store,29,29,0,13,0,20000,359.32,Supplier 1,WH003,WH002,7,14,Low Stock,2026-04-07
+SKU0052,skincare,ST003,Bangalore,store,43,43,0,44,5,18000,268.27,Supplier 1,WH003,WH004,11,22,Low Stock,2026-05-03
+SKU0052,skincare,ST007,Pune,store,19,19,0,18,4,18000,268.27,Supplier 3,WH003,WH004,5,10,Critical,2026-03-19
+SKU0052,skincare,ST005,Chennai,store,16,16,0,29,1,25000,268.27,Supplier 4,WH003,WH004,4,8,Critical,2026-03-27
+SKU0053,skincare,ST003,Bangalore,store,29,29,0,18,3,18000,458.63,Supplier 5,WH003,WH004,7,14,Low Stock,2026-03-15
+SKU0053,skincare,ST002,Delhi,store,31,31,0,22,5,20000,458.63,Supplier 3,WH003,WH004,8,16,Low Stock,2026-04-05
+SKU0053,skincare,ST001,Mumbai,store,30,30,0,50,5,15000,458.63,Supplier 2,WH003,WH004,8,15,Low Stock,2026-02-25
+SKU0053,skincare,ST006,Hyderabad,store,26,26,0,42,1,20000,458.63,Supplier 4,WH003,WH004,6,13,Low Stock,2026-03-09
+SKU0053,skincare,ST004,Kolkata,store,16,16,0,31,1,22000,458.63,Supplier 2,WH003,WH004,4,8,Critical,2026-03-29
+SKU0054,skincare,ST003,Bangalore,store,32,32,0,16,5,18000,636.25,Supplier 5,WH003,WH005,8,16,Low Stock,2026-03-19
+SKU0054,skincare,ST007,Pune,store,36,36,0,3,0,18000,636.25,Supplier 3,WH003,WH005,9,18,Low Stock,2026-04-20
+SKU0054,skincare,ST002,Delhi,store,18,18,0,12,3,20000,636.25,Supplier 2,WH003,WH005,4,9,Critical,2026-04-30
+SKU0054,skincare,ST001,Mumbai,store,21,21,0,40,5,15000,636.25,Supplier 5,WH003,WH005,5,10,Low Stock,2026-03-07
+SKU0055,cosmetics,ST006,Hyderabad,store,39,39,0,27,4,20000,300.42,Supplier 1,WH003,WH001,10,20,Low Stock,2026-03-08
+SKU0055,cosmetics,ST003,Bangalore,store,18,18,0,43,2,18000,300.42,Supplier 2,WH003,WH001,4,9,Critical,2026-04-16
+SKU0055,cosmetics,ST002,Delhi,store,33,33,0,6,3,20000,300.42,Supplier 1,WH003,WH001,8,16,Low Stock,2026-05-03
+SKU0055,cosmetics,ST008,Ahmedabad,store,29,29,0,28,5,15000,300.42,Supplier 2,WH003,WH001,7,14,Low Stock,2026-04-15
+SKU0056,cosmetics,ST003,Bangalore,store,10,10,0,28,4,18000,243.72,Supplier 1,WH003,WH001,2,5,Critical,2026-03-25
+SKU0056,cosmetics,ST001,Mumbai,store,12,12,0,26,2,15000,243.72,Supplier 3,WH003,WH001,3,6,Critical,2026-02-28
+SKU0056,cosmetics,ST006,Hyderabad,store,14,14,0,10,4,20000,243.72,Supplier 5,WH003,WH001,4,7,Critical,2026-03-20
+SKU0056,cosmetics,ST007,Pune,store,27,27,0,38,2,18000,243.72,Supplier 3,WH003,WH001,7,14,Low Stock,2026-03-10
+SKU0056,cosmetics,ST004,Kolkata,store,31,31,0,22,4,22000,243.72,Supplier 1,WH003,WH001,8,16,Low Stock,2026-04-24
+SKU0057,cosmetics,ST003,Bangalore,store,14,14,0,14,2,18000,583.72,Supplier 4,WH003,WH004,4,7,Critical,2026-02-12
+SKU0057,cosmetics,ST005,Chennai,store,29,29,0,6,2,25000,583.72,Supplier 1,WH003,WH004,7,14,Low Stock,2026-03-12
+SKU0058,cosmetics,ST003,Bangalore,store,39,39,0,49,0,18000,447.28,Supplier 3,WH003,WH005,10,20,Low Stock,2026-04-26
+SKU0058,cosmetics,ST007,Pune,store,34,34,0,2,4,18000,447.28,Supplier 2,WH003,WH005,8,17,Low Stock,2026-02-17
+SKU0058,cosmetics,ST002,Delhi,store,36,36,0,36,4,20000,447.28,Supplier 4,WH003,WH005,9,18,Low Stock,2026-04-26
+SKU0059,cosmetics,ST003,Bangalore,store,37,37,0,14,3,18000,161.5,Supplier 3,WH003,WH005,9,18,Low Stock,2026-02-24
+SKU0059,cosmetics,ST008,Ahmedabad,store,11,11,0,36,2,15000,161.5,Supplier 2,WH003,WH005,3,6,Critical,2026-04-14
+SKU0059,cosmetics,ST004,Kolkata,store,32,32,0,26,0,22000,161.5,Supplier 5,WH003,WH005,8,16,Low Stock,2026-03-02
+SKU0059,cosmetics,ST005,Chennai,store,33,33,0,2,4,25000,161.5,Supplier 3,WH003,WH005,8,16,Low Stock,2026-04-12
+SKU0060,cosmetics,ST004,Kolkata,store,35,35,0,11,5,22000,192.44,Supplier 1,WH004,WH003,9,18,Low Stock,2026-03-21
+SKU0060,cosmetics,ST001,Mumbai,store,29,29,0,29,5,15000,192.44,Supplier 4,WH004,WH003,7,14,Low Stock,2026-04-05
+SKU0060,cosmetics,ST005,Chennai,store,10,10,0,24,5,25000,192.44,Supplier 2,WH004,WH003,2,5,Critical,2026-04-09
+SKU0061,cosmetics,ST006,Hyderabad,store,23,23,0,30,3,20000,499.76,Supplier 3,WH004,WH001,6,12,Low Stock,2026-05-04
+SKU0061,cosmetics,ST004,Kolkata,store,25,25,0,35,1,22000,499.76,Supplier 4,WH004,WH001,6,12,Low Stock,2026-04-25
+SKU0061,cosmetics,ST005,Chennai,store,25,25,0,21,0,25000,499.76,Supplier 4,WH004,WH001,6,12,Low Stock,2026-02-20
+SKU0061,cosmetics,ST008,Ahmedabad,store,20,20,0,14,2,15000,499.76,Supplier 4,WH004,WH001,5,10,Low Stock,2026-04-04
+SKU0062,cosmetics,ST006,Hyderabad,store,20,20,0,7,3,20000,222.46,Supplier 3,WH004,WH002,5,10,Low Stock,2026-03-18
+SKU0062,cosmetics,ST004,Kolkata,store,35,35,0,15,5,22000,222.46,Supplier 1,WH004,WH002,9,18,Low Stock,2026-04-08
+SKU0063,cosmetics,ST004,Kolkata,store,20,20,0,11,3,22000,460.09,Supplier 5,WH004,WH003,5,10,Low Stock,2026-03-29
+SKU0063,cosmetics,ST005,Chennai,store,19,19,0,14,2,25000,460.09,Supplier 1,WH004,WH003,5,10,Critical,2026-04-01
+SKU0064,cosmetics,ST006,Hyderabad,store,18,18,0,37,4,20000,383.04,Supplier 5,WH004,WH002,4,9,Critical,2026-03-29
+SKU0064,cosmetics,ST004,Kolkata,store,37,37,0,42,5,22000,383.04,Supplier 1,WH004,WH002,9,18,Low Stock,2026-03-19
+SKU0064,cosmetics,ST003,Bangalore,store,34,34,0,6,0,18000,383.04,Supplier 2,WH004,WH002,8,17,Low Stock,2026-02-20
+SKU0064,cosmetics,ST005,Chennai,store,28,28,0,11,4,25000,383.04,Supplier 1,WH004,WH002,7,14,Low Stock,2026-03-08
+SKU0065,cosmetics,ST004,Kolkata,store,23,23,0,43,0,22000,256.98,Supplier 2,WH004,WH003,6,12,Low Stock,2026-02-26
+SKU0065,cosmetics,ST003,Bangalore,store,22,22,0,12,0,18000,256.98,Supplier 3,WH004,WH003,6,11,Low Stock,2026-03-26
+SKU0066,cosmetics,ST008,Ahmedabad,store,25,25,0,12,4,15000,577.32,Supplier 3,WH004,WH001,6,12,Low Stock,2026-03-15
+SKU0066,cosmetics,ST001,Mumbai,store,31,31,0,48,2,15000,577.32,Supplier 3,WH004,WH001,8,16,Low Stock,2026-04-24
+SKU0066,cosmetics,ST006,Hyderabad,store,22,22,0,22,1,20000,577.32,Supplier 4,WH004,WH001,6,11,Low Stock,2026-03-08
+SKU0066,cosmetics,ST007,Pune,store,38,38,0,9,4,18000,577.32,Supplier 5,WH004,WH001,10,19,Low Stock,2026-04-27
+SKU0066,cosmetics,ST004,Kolkata,store,24,24,0,12,2,22000,577.32,Supplier 3,WH004,WH001,6,12,Low Stock,2026-02-23
+SKU0067,cosmetics,ST004,Kolkata,store,15,15,0,44,4,22000,294.4,Supplier 2,WH004,WH001,4,8,Critical,2026-03-31
+SKU0067,cosmetics,ST002,Delhi,store,22,22,0,40,0,20000,294.4,Supplier 2,WH004,WH001,6,11,Low Stock,2026-03-17
+SKU0068,cosmetics,ST004,Kolkata,store,38,38,0,31,3,22000,319.86,Supplier 3,WH004,WH002,10,19,Low Stock,2026-04-26
+SKU0068,cosmetics,ST003,Bangalore,store,22,22,0,46,3,18000,319.86,Supplier 5,WH004,WH002,6,11,Low Stock,2026-02-23
+SKU0068,cosmetics,ST005,Chennai,store,24,24,0,29,0,25000,319.86,Supplier 3,WH004,WH002,6,12,Low Stock,2026-03-15
+SKU0069,cosmetics,ST004,Kolkata,store,12,12,0,39,5,22000,383.73,Supplier 1,WH004,WH005,3,6,Critical,2026-04-25
+SKU0069,cosmetics,ST003,Bangalore,store,33,33,0,41,2,18000,383.73,Supplier 4,WH004,WH005,8,16,Low Stock,2026-02-28
+SKU0069,cosmetics,ST002,Delhi,store,22,22,0,8,5,20000,383.73,Supplier 5,WH004,WH005,6,11,Low Stock,2026-02-13
+SKU0070,cosmetics,ST005,Chennai,store,15,15,0,29,1,25000,268.59,Supplier 4,WH004,WH001,4,8,Critical,2026-03-19
+SKU0070,cosmetics,ST001,Mumbai,store,19,19,0,4,0,15000,268.59,Supplier 2,WH004,WH001,5,10,Critical,2026-03-04
+SKU0070,cosmetics,ST006,Hyderabad,store,35,35,0,31,5,20000,268.59,Supplier 5,WH004,WH001,9,18,Low Stock,2026-04-09
+SKU0070,cosmetics,ST007,Pune,store,33,33,0,21,4,18000,268.59,Supplier 1,WH004,WH001,8,16,Low Stock,2026-02-25
+SKU0070,cosmetics,ST004,Kolkata,store,21,21,0,41,5,22000,268.59,Supplier 2,WH004,WH001,5,10,Low Stock,2026-03-26
+SKU0071,cosmetics,ST006,Hyderabad,store,21,21,0,50,3,20000,181.04,Supplier 2,WH004,WH003,5,10,Low Stock,2026-04-02
+SKU0071,cosmetics,ST004,Kolkata,store,23,23,0,21,5,22000,181.04,Supplier 2,WH004,WH003,6,12,Low Stock,2026-04-10
+SKU0071,cosmetics,ST001,Mumbai,store,24,24,0,48,1,15000,181.04,Supplier 4,WH004,WH003,6,12,Low Stock,2026-05-07
+SKU0071,cosmetics,ST008,Ahmedabad,store,17,17,0,41,2,15000,181.04,Supplier 1,WH004,WH003,4,8,Critical,2026-03-26
+SKU0072,cosmetics,ST003,Bangalore,store,17,17,0,12,2,18000,214.49,Supplier 2,WH004,WH005,4,8,Critical,2026-05-05
+SKU0072,cosmetics,ST002,Delhi,store,14,14,0,5,3,20000,214.49,Supplier 2,WH004,WH005,4,7,Critical,2026-04-20
+SKU0072,cosmetics,ST005,Chennai,store,24,24,0,36,3,25000,214.49,Supplier 3,WH004,WH005,6,12,Low Stock,2026-05-03
+SKU0072,cosmetics,ST007,Pune,store,23,23,0,5,3,18000,214.49,Supplier 3,WH004,WH005,6,12,Low Stock,2026-05-07
+SKU0072,cosmetics,ST004,Kolkata,store,26,26,0,30,3,22000,214.49,Supplier 3,WH004,WH005,6,13,Low Stock,2026-03-22
+SKU0073,cosmetics,ST003,Bangalore,store,27,27,0,6,5,18000,343.72,Supplier 4,WH004,WH002,7,14,Low Stock,2026-03-14
+SKU0073,cosmetics,ST004,Kolkata,store,13,13,0,8,2,22000,343.72,Supplier 4,WH004,WH002,3,6,Critical,2026-04-09
+SKU0073,cosmetics,ST001,Mumbai,store,13,13,0,8,5,15000,343.72,Supplier 2,WH004,WH002,3,6,Critical,2026-03-10
+SKU0074,cosmetics,ST006,Hyderabad,store,27,27,0,50,3,20000,347.88,Supplier 4,WH004,WH005,7,14,Low Stock,2026-03-25
+SKU0074,cosmetics,ST004,Kolkata,store,37,37,0,45,3,22000,347.88,Supplier 1,WH004,WH005,9,18,Low Stock,2026-05-08
+SKU0074,cosmetics,ST007,Pune,store,16,16,0,11,5,18000,347.88,Supplier 2,WH004,WH005,4,8,Critical,2026-03-06
+SKU0075,fashion,ST004,Kolkata,store,55,55,0,31,2,22000,859.44,Supplier 5,WH004,WH005,14,28,Healthy,2026-04-20
+SKU0075,fashion,ST001,Mumbai,store,27,27,0,8,0,15000,859.44,Supplier 4,WH004,WH005,7,14,Low Stock,2026-02-18
+SKU0075,fashion,ST002,Delhi,store,55,55,0,27,5,20000,859.44,Supplier 4,WH004,WH005,14,28,Healthy,2026-02-10
+SKU0075,fashion,ST008,Ahmedabad,store,20,20,0,34,3,15000,859.44,Supplier 3,WH004,WH005,5,10,Low Stock,2026-05-02
+SKU0076,fashion,ST004,Kolkata,store,60,60,0,41,2,22000,2517.37,Supplier 3,WH004,WH002,15,30,Healthy,2026-03-22
+SKU0076,fashion,ST007,Pune,store,22,22,0,10,3,18000,2517.37,Supplier 4,WH004,WH002,6,11,Low Stock,2026-03-15
+SKU0076,fashion,ST005,Chennai,store,42,42,0,40,4,25000,2517.37,Supplier 4,WH004,WH002,10,21,Low Stock,2026-03-16
+SKU0077,fashion,ST002,Delhi,store,41,41,0,36,1,20000,1865.03,Supplier 1,WH004,WH005,10,20,Low Stock,2026-04-15
+SKU0077,fashion,ST004,Kolkata,store,42,42,0,18,2,22000,1865.03,Supplier 5,WH004,WH005,10,21,Low Stock,2026-04-13
+SKU0077,fashion,ST001,Mumbai,store,36,36,0,1,5,15000,1865.03,Supplier 1,WH004,WH005,9,18,Low Stock,2026-02-13
+SKU0077,fashion,ST005,Chennai,store,58,58,0,49,2,25000,1865.03,Supplier 1,WH004,WH005,14,29,Healthy,2026-03-22
+SKU0078,fashion,ST004,Kolkata,store,24,24,0,46,5,22000,1089.64,Supplier 3,WH004,WH005,6,12,Low Stock,2026-04-21
+SKU0078,fashion,ST001,Mumbai,store,58,58,0,4,4,15000,1089.64,Supplier 5,WH004,WH005,14,29,Healthy,2026-02-23
+SKU0079,fashion,ST004,Kolkata,store,35,35,0,42,0,22000,1067.01,Supplier 5,WH004,WH002,9,18,Low Stock,2026-03-10
+SKU0079,fashion,ST002,Delhi,store,27,27,0,8,1,20000,1067.01,Supplier 4,WH004,WH002,7,14,Low Stock,2026-03-16
+SKU0080,fashion,ST006,Hyderabad,store,25,25,0,41,3,20000,1686.46,Supplier 1,WH005,WH002,6,12,Low Stock,2026-03-13
+SKU0080,fashion,ST005,Chennai,store,33,33,0,22,2,25000,1686.46,Supplier 5,WH005,WH002,8,16,Low Stock,2026-02-09
+SKU0081,fashion,ST006,Hyderabad,store,41,41,0,9,2,20000,2782.39,Supplier 2,WH005,WH002,10,20,Low Stock,2026-04-07
+SKU0081,fashion,ST005,Chennai,store,38,38,0,0,1,25000,2782.39,Supplier 2,WH005,WH002,10,19,Low Stock,2026-03-01
+SKU0082,fashion,ST006,Hyderabad,store,23,23,0,45,5,20000,2552.21,Supplier 4,WH005,WH002,6,12,Low Stock,2026-03-21
+SKU0082,fashion,ST005,Chennai,store,56,56,0,47,1,25000,2552.21,Supplier 2,WH005,WH002,14,28,Healthy,2026-04-09
+SKU0083,fashion,ST006,Hyderabad,store,53,53,0,20,3,20000,1296.85,Supplier 1,WH005,WH001,13,26,Healthy,2026-03-24
+SKU0083,fashion,ST005,Chennai,store,21,21,0,25,3,25000,1296.85,Supplier 4,WH005,WH001,5,10,Low Stock,2026-04-20
+SKU0083,fashion,ST008,Ahmedabad,store,47,47,0,48,0,15000,1296.85,Supplier 5,WH005,WH001,12,24,Low Stock,2026-04-29
+SKU0084,fashion,ST006,Hyderabad,store,41,41,0,21,0,20000,2087.55,Supplier 1,WH005,WH004,10,20,Low Stock,2026-04-03
+SKU0084,fashion,ST001,Mumbai,store,29,29,0,13,2,15000,2087.55,Supplier 2,WH005,WH004,7,14,Low Stock,2026-04-21
+SKU0084,fashion,ST005,Chennai,store,44,44,0,12,4,25000,2087.55,Supplier 3,WH005,WH004,11,22,Low Stock,2026-05-03
+SKU0084,fashion,ST007,Pune,store,43,43,0,50,3,18000,2087.55,Supplier 2,WH005,WH004,11,22,Low Stock,2026-02-13
+SKU0085,fashion,ST003,Bangalore,store,53,53,0,28,2,18000,2944.64,Supplier 3,WH005,WH002,13,26,Healthy,2026-02-25
+SKU0085,fashion,ST005,Chennai,store,55,55,0,2,2,25000,2944.64,Supplier 2,WH005,WH002,14,28,Healthy,2026-03-21
+SKU0085,fashion,ST002,Delhi,store,49,49,0,24,3,20000,2944.64,Supplier 5,WH005,WH002,12,24,Low Stock,2026-04-10
+SKU0085,fashion,ST008,Ahmedabad,store,29,29,0,46,4,15000,2944.64,Supplier 2,WH005,WH002,7,14,Low Stock,2026-02-28
+SKU0085,fashion,ST006,Hyderabad,store,40,40,0,49,0,20000,2944.64,Supplier 3,WH005,WH002,10,20,Low Stock,2026-02-21
+SKU0086,fashion,ST006,Hyderabad,store,39,39,0,25,2,20000,1169.55,Supplier 2,WH005,WH003,10,20,Low Stock,2026-03-10
+SKU0086,fashion,ST005,Chennai,store,48,48,0,16,5,25000,1169.55,Supplier 5,WH005,WH003,12,24,Low Stock,2026-05-04
+SKU0086,fashion,ST008,Ahmedabad,store,51,51,0,29,4,15000,1169.55,Supplier 1,WH005,WH003,13,26,Healthy,2026-04-15
+SKU0087,fashion,ST006,Hyderabad,store,23,23,0,4,4,20000,1413.06,Supplier 2,WH005,WH002,6,12,Low Stock,2026-05-04
+SKU0087,fashion,ST005,Chennai,store,35,35,0,11,5,25000,1413.06,Supplier 4,WH005,WH002,9,18,Low Stock,2026-03-19
+SKU0088,fashion,ST005,Chennai,store,50,50,0,2,4,25000,2659.19,Supplier 4,WH005,WH003,12,25,Healthy,2026-04-05
+SKU0088,fashion,ST001,Mumbai,store,23,23,0,47,5,15000,2659.19,Supplier 2,WH005,WH003,6,12,Low Stock,2026-05-02
+SKU0088,fashion,ST006,Hyderabad,store,34,34,0,15,3,20000,2659.19,Supplier 4,WH005,WH003,8,17,Low Stock,2026-02-17
+SKU0088,fashion,ST007,Pune,store,44,44,0,28,5,18000,2659.19,Supplier 5,WH005,WH003,11,22,Low Stock,2026-04-06
+SKU0088,fashion,ST004,Kolkata,store,56,56,0,11,5,22000,2659.19,Supplier 1,WH005,WH003,14,28,Healthy,2026-04-10
+SKU0089,fashion,ST006,Hyderabad,store,51,51,0,35,3,20000,581.12,Supplier 5,WH005,WH003,13,26,Healthy,2026-04-03
+SKU0089,fashion,ST004,Kolkata,store,47,47,0,34,2,22000,581.12,Supplier 1,WH005,WH003,12,24,Low Stock,2026-05-03
+SKU0089,fashion,ST005,Chennai,store,24,24,0,7,0,25000,581.12,Supplier 4,WH005,WH003,6,12,Low Stock,2026-04-24
+SKU0089,fashion,ST008,Ahmedabad,store,46,46,0,36,5,15000,581.12,Supplier 4,WH005,WH003,12,23,Low Stock,2026-02-12
+SKU0090,fashion,ST005,Chennai,store,45,45,0,32,3,25000,1324.94,Supplier 5,WH005,WH002,11,22,Low Stock,2026-03-15
+SKU0090,fashion,ST002,Delhi,store,23,23,0,40,2,20000,1324.94,Supplier 2,WH005,WH002,6,12,Low Stock,2026-03-03
+SKU0090,fashion,ST001,Mumbai,store,20,20,0,14,3,15000,1324.94,Supplier 5,WH005,WH002,5,10,Low Stock,2026-03-18
+SKU0090,fashion,ST006,Hyderabad,store,22,22,0,30,3,20000,1324.94,Supplier 3,WH005,WH002,6,11,Low Stock,2026-02-17
+SKU0090,fashion,ST004,Kolkata,store,42,42,0,40,4,22000,1324.94,Supplier 4,WH005,WH002,10,21,Low Stock,2026-02-09
+SKU0091,fashion,ST003,Bangalore,store,39,39,0,10,4,18000,869.68,Supplier 3,WH005,WH004,10,20,Low Stock,2026-04-03
+SKU0091,fashion,ST005,Chennai,store,53,53,0,9,1,25000,869.68,Supplier 2,WH005,WH004,13,26,Healthy,2026-05-04
+SKU0091,fashion,ST008,Ahmedabad,store,21,21,0,45,2,15000,869.68,Supplier 2,WH005,WH004,5,10,Low Stock,2026-04-09
+SKU0091,fashion,ST006,Hyderabad,store,37,37,0,3,1,20000,869.68,Supplier 3,WH005,WH004,9,18,Low Stock,2026-03-16
+SKU0091,fashion,ST007,Pune,store,22,22,0,34,1,18000,869.68,Supplier 1,WH005,WH004,6,11,Low Stock,2026-04-06
+SKU0092,fashion,ST006,Hyderabad,store,47,47,0,40,0,20000,2189.98,Supplier 1,WH005,WH002,12,24,Low Stock,2026-03-26
+SKU0092,fashion,ST005,Chennai,store,44,44,0,5,2,25000,2189.98,Supplier 1,WH005,WH002,11,22,Low Stock,2026-03-01
+SKU0092,fashion,ST002,Delhi,store,58,58,0,19,2,20000,2189.98,Supplier 3,WH005,WH002,14,29,Healthy,2026-02-19
+SKU0093,fashion,ST003,Bangalore,store,58,58,0,31,3,18000,1342.35,Supplier 3,WH005,WH003,14,29,Healthy,2026-04-01
+SKU0093,fashion,ST005,Chennai,store,46,46,0,42,4,25000,1342.35,Supplier 5,WH005,WH003,12,23,Low Stock,2026-04-17
+SKU0093,fashion,ST002,Delhi,store,34,34,0,34,1,20000,1342.35,Supplier 2,WH005,WH003,8,17,Low Stock,2026-04-25
+SKU0093,fashion,ST006,Hyderabad,store,27,27,0,41,0,20000,1342.35,Supplier 5,WH005,WH003,7,14,Low Stock,2026-02-16
+SKU0093,fashion,ST004,Kolkata,store,38,38,0,36,0,22000,1342.35,Supplier 1,WH005,WH003,10,19,Low Stock,2026-05-03
+SKU0094,fashion,ST005,Chennai,store,36,36,0,46,4,25000,2845.05,Supplier 3,WH005,WH001,9,18,Low Stock,2026-02-17
+SKU0094,fashion,ST001,Mumbai,store,21,21,0,33,4,15000,2845.05,Supplier 4,WH005,WH001,5,10,Low Stock,2026-03-18
+SKU0094,fashion,ST006,Hyderabad,store,48,48,0,3,3,20000,2845.05,Supplier 4,WH005,WH001,12,24,Low Stock,2026-04-09
+SKU0094,fashion,ST007,Pune,store,43,43,0,5,0,18000,2845.05,Supplier 3,WH005,WH001,11,22,Low Stock,2026-05-08
+SKU0094,fashion,ST004,Kolkata,store,47,47,0,32,5,22000,2845.05,Supplier 5,WH005,WH001,12,24,Low Stock,2026-02-28
+SKU0095,fashion,ST006,Hyderabad,store,55,55,0,39,0,20000,1267.7,Supplier 2,WH005,WH001,14,28,Healthy,2026-04-11
+SKU0095,fashion,ST005,Chennai,store,51,51,0,7,3,25000,1267.7,Supplier 5,WH005,WH001,13,26,Healthy,2026-04-08
+SKU0096,fashion,ST006,Hyderabad,store,34,34,0,46,5,20000,802.38,Supplier 3,WH005,WH001,8,17,Low Stock,2026-05-01
+SKU0096,fashion,ST001,Mumbai,store,34,34,0,32,3,15000,802.38,Supplier 1,WH005,WH001,8,17,Low Stock,2026-04-27
+SKU0096,fashion,ST005,Chennai,store,31,31,0,41,3,25000,802.38,Supplier 1,WH005,WH001,8,16,Low Stock,2026-02-09
+SKU0096,fashion,ST002,Delhi,store,29,29,0,4,1,20000,802.38,Supplier 5,WH005,WH001,7,14,Low Stock,2026-05-05
+SKU0097,fashion,ST006,Hyderabad,store,41,41,0,16,2,20000,2344.72,Supplier 4,WH005,WH002,10,20,Low Stock,2026-05-05
+SKU0097,fashion,ST004,Kolkata,store,38,38,0,2,2,22000,2344.72,Supplier 4,WH005,WH002,10,19,Low Stock,2026-04-08
+SKU0097,fashion,ST007,Pune,store,60,60,0,23,4,18000,2344.72,Supplier 2,WH005,WH002,15,30,Healthy,2026-03-30
+SKU0097,fashion,ST005,Chennai,store,41,41,0,12,1,25000,2344.72,Supplier 4,WH005,WH002,10,20,Low Stock,2026-05-07
+SKU0098,fashion,ST006,Hyderabad,store,25,25,0,21,5,20000,2530.39,Supplier 5,WH005,WH001,6,12,Low Stock,2026-02-18
+SKU0098,fashion,ST003,Bangalore,store,21,21,0,28,5,18000,2530.39,Supplier 3,WH005,WH001,5,10,Low Stock,2026-05-07
+SKU0098,fashion,ST005,Chennai,store,23,23,0,47,0,25000,2530.39,Supplier 5,WH005,WH001,6,12,Low Stock,2026-04-26
+SKU0099,fashion,ST006,Hyderabad,store,40,40,0,39,0,20000,2008.74,Supplier 5,WH005,WH001,10,20,Low Stock,2026-05-01
+SKU0099,fashion,ST005,Chennai,store,36,36,0,9,2,25000,2008.74,Supplier 4,WH005,WH001,9,18,Low Stock,2026-04-26

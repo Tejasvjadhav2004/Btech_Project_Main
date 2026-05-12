@@ -33,6 +33,118 @@ class CreateOrderLegacyRequest(BaseModel):
     shipping_address: Optional[dict] = None
 
 
+class ValidateOrderRequest(BaseModel):
+    """Request model for validating order before creation"""
+    sku: str
+    quantity: int
+    store_id: str
+
+
+@router.post("/validate")
+async def validate_order(request: ValidateOrderRequest):
+    """
+    Validate an order before creation.
+
+    Checks:
+    - Product exists and is active
+    - Store exists
+    - Inventory availability across warehouses
+
+    Returns validation result with product info, price, and stock availability.
+    """
+    try:
+        from services.warehouse_service import WarehouseService
+        from services.inventory_service import InventoryService
+
+        warehouse_service = WarehouseService()
+        inventory_service = InventoryService()
+
+        result = {
+            "valid": True,
+            "errors": [],
+            "warnings": [],
+            "product": None,
+            "store": None,
+            "inventory": [],
+            "total_available": 0,
+            "can_fulfill": False,
+            "unit_price": 0,
+            "total_amount": 0
+        }
+
+        # Check product
+        product = order_service.db.products.find_one({"sku": request.sku})
+        if not product:
+            result["valid"] = False
+            result["errors"].append(f"Product with SKU '{request.sku}' not found")
+            return result
+
+        if not product.get("is_active", True):
+            result["warnings"].append(f"Product '{product.get('name')}' is currently inactive")
+
+        result["product"] = {
+            "sku": product["sku"],
+            "name": product.get("name"),
+            "category": product.get("category"),
+            "brand": product.get("brand"),
+            "current_price": product.get("current_price", 0)
+        }
+        result["unit_price"] = product.get("current_price", 0)
+        result["total_amount"] = result["unit_price"] * request.quantity
+
+        # Check store
+        store = order_service.db.stores.find_one({"store_id": request.store_id})
+        if not store:
+            result["valid"] = False
+            result["errors"].append(f"Store '{request.store_id}' not found")
+            return result
+
+        result["store"] = {
+            "store_id": store["store_id"],
+            "name": store.get("name"),
+            "city": store.get("location", {}).get("city"),
+            "state": store.get("location", {}).get("state")
+        }
+
+        # Check inventory across warehouses
+        warehouses = list(order_service.db.warehouses.find({}, {"_id": 0}))
+        total_available = 0
+        inventory_details = []
+
+        for wh in warehouses:
+            wh_id = wh.get("warehouse_id")
+            is_available, details = inventory_service.check_stock_availability(
+                request.sku, wh_id, request.quantity
+            )
+
+            if details.get("available_stock", 0) > 0:
+                inventory_details.append({
+                    "warehouse_id": wh_id,
+                    "warehouse_name": wh.get("name"),
+                    "city": wh.get("city"),
+                    "total_stock": details.get("total_stock", 0),
+                    "reserved_stock": details.get("reserved_stock", 0),
+                    "available_stock": details.get("available_stock", 0),
+                    "can_fulfill": is_available
+                })
+                total_available += details.get("available_stock", 0)
+
+        result["inventory"] = sorted(inventory_details, key=lambda x: x["available_stock"], reverse=True)
+        result["total_available"] = total_available
+        result["can_fulfill"] = total_available >= request.quantity
+
+        if not result["can_fulfill"]:
+            result["warnings"].append(
+                f"Insufficient stock. Available: {total_available}, Required: {request.quantity}"
+            )
+
+        return result
+
+    except Exception as e:
+        logger.error(f"Error validating order: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
 @router.post("/create")
 async def create_order_simple(request: CreateOrderRequest):
     """

@@ -38,10 +38,37 @@ class OrderService:
     HIGH_PRIORITY_QUANTITY = 100
     
     def __init__(self):
-        self.db = mongodb.get_database()
-        self.warehouse_service = WarehouseService()
-        self.inventory_service = InventoryService()
-        self.delivery_service = DeliveryService()
+        # Don't cache database reference - get it dynamically each time
+        pass
+    
+    @property
+    def db(self):
+        """Get database connection dynamically"""
+        return mongodb.get_database()
+    
+    @property
+    def warehouse_service(self):
+        """Get warehouse service dynamically"""
+        from services.warehouse_service import WarehouseService
+        return WarehouseService()
+    
+    @property
+    def inventory_service(self):
+        """Get inventory service dynamically"""
+        from services.inventory_service import InventoryService
+        return InventoryService()
+    
+    @property
+    def delivery_service(self):
+        """Get delivery service dynamically"""
+        from services.delivery_service import DeliveryService
+        return DeliveryService()
+    
+    @property
+    def execution_logger(self):
+        """Get execution logger dynamically"""
+        from services.execution_logger import ExecutionLogger
+        return ExecutionLogger()
         self.execution_logger = ExecutionLogger()
     
     def _assign_priority(self, quantity: int, explicit_priority: Optional[str] = None) -> str:
@@ -510,20 +537,49 @@ class OrderService:
         return self.get_order(order_id)
     
     def get_order(self, order_id: str) -> Dict[str, Any]:
-        """Get order by ID"""
+        """Get order by ID, enriched with calculated amounts"""
         order = self.db.orders.find_one({"order_id": order_id})
         if not order:
             raise ValueError(f"Order {order_id} not found")
+
+        # Enrich order with calculated amounts and product info
+        if order.get("items") and len(order["items"]) > 0:
+            item = order["items"][0]
+            sku = item.get("sku")
+            quantity = item.get("quantity", 0)
+            unit_price = item.get("unit_price", 0)
+
+            # If unit_price is missing, fetch from products
+            if unit_price == 0 and sku:
+                product = self.db.products.find_one({"sku": sku})
+                if product:
+                    unit_price = product.get("current_price", 0)
+                    item["unit_price"] = unit_price
+                    item["total_price"] = unit_price * quantity
+
+            # Calculate total_amount if missing
+            if not order.get("total_amount"):
+                order["total_amount"] = item.get("total_price", unit_price * quantity)
+
+            # Add convenience fields for frontend
+            order["sku"] = sku
+            order["quantity"] = quantity
+            order["unit_price"] = unit_price
+
+        # Also check for warehouse_id field mapping
+        if not order.get("warehouse_id") and order.get("assigned_warehouse"):
+            order["warehouse_id"] = order["assigned_warehouse"]
+
         return order
     
     def get_orders(
-        self, 
-        store_id: str = None, 
-        status: str = None, 
+        self,
+        store_id: str = None,
+        status: str = None,
         priority: str = None,
         limit: int = 100
     ) -> List[Dict[str, Any]]:
-        """Get orders with optional filters"""
+        """Get orders with optional filters, enriched with calculated amounts"""
         query = {}
         if store_id:
             query["store_id"] = store_id
@@ -531,8 +587,40 @@ class OrderService:
             query["status"] = status
         if priority:
             query["priority"] = priority
-        
-        return list(self.db.orders.find(query).sort("created_at", -1).limit(limit))
+
+        orders = list(self.db.orders.find(query).sort("created_at", -1).limit(limit))
+
+        # Enrich orders with calculated amounts and product info
+        for order in orders:
+            # Get SKU and quantity from items or top-level fields
+            if order.get("items") and len(order["items"]) > 0:
+                item = order["items"][0]
+                sku = item.get("sku")
+                quantity = item.get("quantity", 0)
+                unit_price = item.get("unit_price", 0)
+
+                # If unit_price is missing, fetch from products
+                if unit_price == 0 and sku:
+                    product = self.db.products.find_one({"sku": sku})
+                    if product:
+                        unit_price = product.get("current_price", 0)
+                        item["unit_price"] = unit_price
+                        item["total_price"] = unit_price * quantity
+
+                # Calculate total_amount if missing
+                if not order.get("total_amount"):
+                    order["total_amount"] = item.get("total_price", unit_price * quantity)
+
+                # Add convenience fields for frontend
+                order["sku"] = sku
+                order["quantity"] = quantity
+                order["unit_price"] = unit_price
+
+            # Also check for warehouse_id field mapping
+            if not order.get("warehouse_id") and order.get("assigned_warehouse"):
+                order["warehouse_id"] = order["assigned_warehouse"]
+
+        return orders
     
     def update_order_status(self, order_id: str, status: str) -> Dict[str, Any]:
         """Update order status (legacy method for compatibility)"""

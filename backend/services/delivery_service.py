@@ -31,8 +31,19 @@ class DeliveryService:
     }
     
     def __init__(self):
-        self.db = mongodb.get_database()
-        self.warehouse_service = WarehouseService()
+        # Don't cache database reference - get it dynamically each time
+        pass
+    
+    @property
+    def db(self):
+        """Get database connection dynamically"""
+        return mongodb.get_database()
+    
+    @property
+    def warehouse_service(self):
+        """Get warehouse service dynamically"""
+        from services.warehouse_service import WarehouseService
+        return WarehouseService()
     
     def _generate_delivery_id(self) -> str:
         """Generate unique delivery ID"""

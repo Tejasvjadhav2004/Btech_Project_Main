@@ -53,5 +53,23 @@ async def get_product(sku: str):
     
     product["id"] = str(product["_id"])
     del product["_id"]
-    
+
     return product
+
+
+@router.get("/{sku}/location")
+async def get_product_location(sku: str):
+    """Get location data for a product"""
+    db = get_db()
+    product = db.products.find_one({"sku": sku})
+    
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    return {
+        "sku": sku,
+        "location": product.get("location"),
+        "primary_warehouse": product.get("primary_warehouse"),
+        "secondary_warehouse": product.get("secondary_warehouse"),
+        "store_allocations": product.get("store_allocations")
+    }

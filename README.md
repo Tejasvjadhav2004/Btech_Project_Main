@@ -133,7 +133,7 @@ supply-chain-management/
    
    **Terminal 1 - FastAPI Backend:**
    ```bash
-   uvicorn backend.api.main:app --reload
+   uvicorn api.main:app --reload
    ```
    
    **Terminal 2 - React Frontend:**

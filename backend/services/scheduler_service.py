@@ -11,6 +11,7 @@ from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
 from services.sensing_service import SensingService
 from services.decision_service import DecisionService
 from services.signal_service import SignalService
+from services.predictive_sensing_service import PredictiveSensingService
 from api.config import settings
 import logging
 
@@ -20,7 +21,7 @@ logger = logging.getLogger(__name__)
 class SchedulerService:
     """
     Background scheduler for periodic detection and monitoring.
-    
+
     Jobs:
     - Low stock detection (every 30 seconds)
     - Stockout detection (every 30 seconds)
@@ -29,13 +30,17 @@ class SchedulerService:
     - Warehouse utilization (every 2 minutes)
     - Signal processing (every 60 seconds)
     - Stale signal cleanup (every hour)
+    - Predictive jobs:
+      - Demand forecasting (every 6 hours)
+      - Predictive sensing (every 1 hour)
     """
-    
+
     def __init__(self):
         self.scheduler = BackgroundScheduler()
         self.sensing_service = SensingService()
         self.decision_service = DecisionService()
         self.signal_service = SignalService()
+        self.predictive_sensing_service = PredictiveSensingService()
         self._is_running = False
         self._job_stats = {}
         
@@ -107,7 +112,20 @@ class SchedulerService:
     def _job_expire_stale_signals(self):
         """Job: Expire stale signals"""
         return self.signal_service.expire_stale_signals()
-    
+
+    def _job_generate_demand_forecast(self):
+        """Job: Generate demand forecasts using ML models"""
+        try:
+            from ml.inference.predict_demand_service import demand_prediction_service
+            return demand_prediction_service.generate_all_predictions(days_ahead=7)
+        except Exception as e:
+            logger.error(f"Error in demand forecast generation: {e}")
+            return {"error": str(e)}
+
+    def _job_predictive_sensing(self):
+        """Job: Run predictive sensing for future risk detection"""
+        return self.predictive_sensing_service.run_all_predictive_detections(source="scheduler")
+
     def setup_jobs(self):
         """Set up all scheduled jobs"""
         
@@ -181,8 +199,28 @@ class SchedulerService:
             name="Expire Stale Signals",
             replace_existing=True
         )
-        
-        logger.info("Scheduler jobs configured")
+
+        # ========== PREDICTIVE JOBS ==========
+
+        # Demand forecasting - every 6 hours
+        self.scheduler.add_job(
+            self._wrap_job(self._job_generate_demand_forecast, "generate_demand_forecast"),
+            trigger=IntervalTrigger(hours=6),
+            id="generate_demand_forecast",
+            name="Generate Demand Forecast",
+            replace_existing=True
+        )
+
+        # Predictive sensing - every 1 hour
+        self.scheduler.add_job(
+            self._wrap_job(self._job_predictive_sensing, "predictive_sensing"),
+            trigger=IntervalTrigger(hours=1),
+            id="predictive_sensing",
+            name="Predictive Sensing",
+            replace_existing=True
+        )
+
+        logger.info("Scheduler jobs configured (including predictive jobs)")
     
     def start(self):
         """Start the scheduler"""

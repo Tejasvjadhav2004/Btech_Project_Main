@@ -24,8 +24,8 @@ class Settings(BaseSettings):
     dashboard_port: int = 5173
     
     # Data Configuration
-    supply_chain_data_path: str = os.path.join("data", "raw", "supply_chain_data.csv")
-    fashion_boutique_data_path: str = os.path.join("data", "raw", "fashion_boutique_dataset.csv")
+    initial_inventory_state_path: str = os.path.join("data", "raw", "initial_inventory_state.csv")
+    enhanced_supply_chain_data_path: str = os.path.join("data", "raw", "enhanced_supply_chain_data.csv")
     
     # Monitoring Configuration
     low_stock_threshold: int = 10
@@ -47,7 +47,11 @@ class Settings(BaseSettings):
     scheduler_delivery_delay_interval: int = 7200   # 2 hours
     scheduler_demand_analysis_interval: int = 14400 # 4 hours
     scheduler_utilization_interval: int = 3600      # 1 hour
-    
+
+    # Predictive Scheduler Intervals
+    scheduler_demand_forecast_interval: int = 21600  # 6 hours
+    scheduler_predictive_sensing_interval: int = 3600  # 1 hour
+
     # Signal Configuration
     signal_auto_resolve_hours: int = 48  # Auto-resolve stale signals after 48 hours
     max_active_signals_per_entity: int = 10
@@ -64,10 +68,43 @@ class Settings(BaseSettings):
         "Mumbai", "Delhi", "Bangalore", "Kolkata", 
         "Chennai", "Hyderabad", "Pune", "Ahmedabad"
     ]
-    
+
+    # Store Types Configuration
+    store_types: dict = {
+        'Boutique': {'capacity_multiplier': 1.0},
+        'Flagship': {'capacity_multiplier': 1.5},
+        'Outlet': {'capacity_multiplier': 0.8}
+    }
+
+    # Warehouse-Region Mapping
+    warehouse_regions: dict = {
+        'WH001': 'West',
+        'WH002': 'North',
+        'WH003': 'South',
+        'WH004': 'East',
+        'WH005': 'South'
+    }
+
+    # Store-Region Mapping
+    store_regions: dict = {
+        'ST001': 'West', 'ST002': 'North', 'ST003': 'South',
+        'ST004': 'East', 'ST005': 'South', 'ST006': 'South',
+        'ST007': 'West', 'ST008': 'West'
+    }
+
+    # LLM API Keys (for orchestration)
+    openai_api_key: Optional[str] = None
+    anthropic_api_key: Optional[str] = None
+
+    # LLM Configuration
+    llm_model: str = "gpt-4"
+    llm_temperature: float = 0.1
+    llm_max_tokens: int = 2000
+
     class Config:
         env_file = ".env"
         case_sensitive = False
+        extra = "ignore"  # Ignore extra fields from .env
 
 
 # Global settings instance

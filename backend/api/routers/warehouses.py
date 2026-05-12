@@ -18,11 +18,35 @@ async def get_warehouses():
     db = get_db()
     warehouses = list(db.warehouses.find({}))
     
+    # Transform warehouse data to match WarehouseResponse model
+    response_warehouses = []
     for warehouse in warehouses:
-        warehouse["id"] = str(warehouse["_id"])
-        del warehouse["_id"]
+        # Get location from nested object or fall back to flat fields
+        location_data = warehouse.get("location", {})
+        location = {
+            "city": location_data.get("city", warehouse.get("location_city", "Unknown")),
+            "state": location_data.get("state", warehouse.get("location_state")),
+            "country": location_data.get("country", warehouse.get("location_country", "India")),
+            "coordinates": location_data.get("coordinates", warehouse.get("coordinates"))
+        }
+        
+        # Build response object matching WarehouseResponse schema
+        response_warehouse = {
+            "id": str(warehouse["_id"]),
+            "warehouse_id": warehouse.get("warehouse_id", ""),
+            "name": warehouse.get("name", ""),
+            "location": location,
+            "capacity": warehouse.get("capacity", 150000),
+            "current_utilization": warehouse.get("current_utilization", 0),
+            "is_active": warehouse.get("is_active", True),
+            "created_at": warehouse.get("created_at"),
+            "updated_at": warehouse.get("updated_at"),
+            "efficiency_metrics": warehouse.get("efficiency_metrics")
+        }
+        
+        response_warehouses.append(response_warehouse)
     
-    return warehouses
+    return response_warehouses
 
 
 @router.get("/{warehouse_id}", response_model=WarehouseResponse)
@@ -34,10 +58,30 @@ async def get_warehouse(warehouse_id: str):
     if not warehouse:
         raise HTTPException(status_code=404, detail=f"Warehouse {warehouse_id} not found")
     
-    warehouse["id"] = str(warehouse["_id"])
-    del warehouse["_id"]
+    # Get location from nested object or fall back to flat fields
+    location_data = warehouse.get("location", {})
+    location = {
+        "city": location_data.get("city", warehouse.get("location_city", "Unknown")),
+        "state": location_data.get("state", warehouse.get("location_state")),
+        "country": location_data.get("country", warehouse.get("location_country", "India")),
+        "coordinates": location_data.get("coordinates", warehouse.get("coordinates"))
+    }
     
-    return warehouse
+    # Build response object matching WarehouseResponse schema
+    response_warehouse = {
+        "id": str(warehouse["_id"]),
+        "warehouse_id": warehouse.get("warehouse_id", ""),
+        "name": warehouse.get("name", ""),
+        "location": location,
+        "capacity": warehouse.get("capacity", 150000),
+        "current_utilization": warehouse.get("current_utilization", 0),
+        "is_active": warehouse.get("is_active", True),
+        "created_at": warehouse.get("created_at"),
+        "updated_at": warehouse.get("updated_at"),
+        "efficiency_metrics": warehouse.get("efficiency_metrics")
+    }
+    
+    return response_warehouse
 
 
 @router.get("/{warehouse_id}/inventory")
@@ -59,3 +103,14 @@ async def get_warehouse_inventory(warehouse_id: str):
         "inventory": inventory,
         "total_items": len(inventory)
     }
+
+
+@router.get("/by-city/{city}")
+async def get_warehouses_by_city(city: str):
+    """Get warehouses in a specific city"""
+    db = get_db()
+    warehouses = list(db.warehouses.find(
+        {"location.city": city},
+        {"_id": 0}
+    ))
+    return {"warehouses": warehouses}

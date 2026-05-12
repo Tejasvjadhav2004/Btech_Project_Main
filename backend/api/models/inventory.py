@@ -76,15 +76,38 @@ class InventoryResponse(BaseModel):
     sku: str
     location_id: str
     location_type: str
-    quantity: int
-    reserved_stock: int = 0
+    
+    # Live tracking fields
+    current_stock: int = Field(..., description="Current stock level (live)")
+    available_stock: int = Field(..., description="Available stock (current - reserved)")
+    reserved_stock: int = Field(0, description="Stock reserved for pending orders")
+    initial_stock: int = Field(..., description="Initial stock from CSV")
+    incoming_stock: int = Field(0, description="Stock in transit")
+    damaged_stock: int = Field(0, description="Damaged goods")
+    inventory_status: Optional[str] = Field(None, description="Inventory status indicator")
+    
+    # Transaction tracking
+    transactions_count: int = Field(0, description="Total transactions processed")
+    total_sales: int = Field(0, description="Total sales volume")
+    total_restock: int = Field(0, description="Total restocks")
+    last_updated: Optional[datetime] = None
+    
+    # Historical data (for ML)
+    historical_avg_sales: Optional[int] = Field(None, description="Historical average sales from CSV")
+    
+    # Alert thresholds
     reorder_threshold: int
     reorder_quantity: int
-    last_restocked: Optional[datetime]
-    last_stock_check: Optional[datetime]
+    
+    # Optimization fields
+    optimal_stock: Optional[int] = None
+    demand_trend: Optional[str] = None
+    lead_time_days: Optional[int] = None
+    
+    # Legacy fields for compatibility
+    quantity: int = Field(..., description="Legacy field (use current_stock)")
+    last_restocked: Optional[datetime] = None
+    last_stock_check: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
-    stock_velocity: Optional[float]
-    demand_trend: Optional[str]
-    optimal_stock: Optional[int]
-    lead_time_days: Optional[int]
+    stock_velocity: Optional[float] = None

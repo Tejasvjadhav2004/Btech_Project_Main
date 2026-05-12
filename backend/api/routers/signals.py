@@ -225,9 +225,92 @@ async def acknowledge_signal(signal_id: str):
 @router.post("/{signal_id}/resolve")
 async def resolve_signal(
     signal_id: str,
-    note: Optional[str] = Query(None, description="Resolution note")
+    note: Optional[str] = Query(None, description="Resolution note"),
+    verify: bool = Query(False, description="Verify if issue is actually fixed before resolving")
 ):
-    """Resolve a signal"""
+    """
+    Resolve a signal.
+
+    If verify=True, checks if the underlying issue is actually fixed:
+    - LOW_STOCK/STOCKOUT: Checks if stock is now above threshold
+    - DELIVERY_DELAY: Checks if delivery status has changed
+    - OVER_UTILIZATION: Checks current warehouse utilization
+    """
+    signal = signal_service.get_signal(signal_id)
+    if not signal:
+        raise HTTPException(status_code=404, detail=f"Signal {signal_id} not found")
+
+    if verify:
+        from db.connection import mongodb
+        db = mongodb.get_database()
+
+        signal_type = signal.get("type")
+        entity_id = signal.get("entity_id")
+        details = signal.get("details", {})
+        threshold = details.get("threshold", 20)
+        sku = details.get("sku")
+
+        can_resolve = True
+        verification = {}
+
+        if signal_type in ["LOW_STOCK", "STOCKOUT"]:
+            if sku and entity_id:
+                inventory = db.inventory.find_one({
+                    "sku": sku,
+                    "location_id": entity_id
+                })
+                current_stock = inventory.get("current_stock", 0) if inventory else 0
+                can_resolve = current_stock > threshold
+                verification = {
+                    "current_stock": current_stock,
+                    "threshold": threshold,
+                    "is_above_threshold": can_resolve
+                }
+
+        elif signal_type == "DELIVERY_DELAY":
+            delivery = db.deliveries.find_one({"delivery_id": entity_id})
+            if delivery:
+                status = delivery.get("status")
+                can_resolve = status in ["delivered", "cancelled"]
+                verification = {
+                    "delivery_status": status,
+                    "can_resolve": can_resolve
+                }
+
+        elif signal_type == "OVER_UTILIZATION":
+            warehouse = db.warehouses.find_one({"warehouse_id": entity_id})
+            if warehouse:
+                utilization = warehouse.get("current_utilization", 0)
+                capacity = warehouse.get("capacity", 1)
+                utilization_pct = (utilization / capacity * 100) if capacity > 0 else 0
+                can_resolve = utilization_pct < 90
+                verification = {
+                    "utilization_percent": round(utilization_pct, 2),
+                    "threshold": 90,
+                    "can_resolve": can_resolve
+                }
+
+        if not can_resolve:
+            return {
+                "success": False,
+                "message": "Cannot resolve - issue not fixed yet",
+                "verification": verification,
+                "signal": signal
+            }
+
+        result = signal_service.resolve_signal(
+            signal_id,
+            auto_resolved=False,
+            resolution_note=note,
+            action_taken={"verified": True, "verification": verification}
+        )
+        return {
+            "message": "Signal resolved and verified",
+            "signal": result,
+            "verification": verification
+        }
+
+    # Normal resolve without verification
     result = signal_service.resolve_signal(
         signal_id,
         auto_resolved=False,
@@ -236,6 +319,78 @@ async def resolve_signal(
     if not result:
         raise HTTPException(status_code=404, detail=f"Signal {signal_id} not found or already resolved")
     return {"message": "Signal resolved", "signal": result}
+
+
+@router.post("/{signal_id}/verify")
+async def verify_signal(signal_id: str):
+    """
+    Verify if a signal's issue is fixed.
+
+    Returns current status without resolving the signal.
+    """
+    from db.connection import mongodb
+    db = mongodb.get_database()
+
+    signal = signal_service.get_signal(signal_id)
+    if not signal:
+        raise HTTPException(status_code=404, detail=f"Signal {signal_id} not found")
+
+    signal_type = signal.get("type")
+    entity_id = signal.get("entity_id")
+    details = signal.get("details", {})
+    threshold = details.get("threshold", 20)
+    sku = details.get("sku")
+
+    verification = {
+        "signal_id": signal_id,
+        "signal_type": signal_type,
+        "can_resolve": False,
+        "current_state": {}
+    }
+
+    if signal_type in ["LOW_STOCK", "STOCKOUT"]:
+        if sku and entity_id:
+            inventory = db.inventory.find_one({
+                "sku": sku,
+                "location_id": entity_id
+            })
+            current_stock = inventory.get("current_stock", 0) if inventory else 0
+            verification["can_resolve"] = current_stock > threshold
+            verification["current_state"] = {
+                "current_stock": current_stock,
+                "threshold": threshold,
+                "is_above_threshold": current_stock > threshold
+            }
+
+    elif signal_type == "DELIVERY_DELAY":
+        delivery = db.deliveries.find_one({"delivery_id": entity_id})
+        if delivery:
+            status = delivery.get("status")
+            verification["can_resolve"] = status in ["delivered", "cancelled"]
+            verification["current_state"] = {
+                "delivery_status": status
+            }
+
+    elif signal_type == "OVER_UTILIZATION":
+        warehouse = db.warehouses.find_one({"warehouse_id": entity_id})
+        if warehouse:
+            utilization = warehouse.get("current_utilization", 0)
+            capacity = warehouse.get("capacity", 1)
+            utilization_pct = (utilization / capacity * 100) if capacity > 0 else 0
+            verification["can_resolve"] = utilization_pct < 90
+            verification["current_state"] = {
+                "utilization_percent": round(utilization_pct, 2),
+                "threshold": 90
+            }
+
+    elif signal_type == "DEMAND_SPIKE":
+        verification["current_state"] = {"note": "Demand spikes require manual review"}
+        verification["can_resolve"] = True  # Can be manually marked as resolved
+
+    else:
+        verification["can_resolve"] = True  # Allow manual resolve for unknown types
+
+    return verification
 
 
 # ========================================
