@@ -67,3 +67,5 @@ temp/
 # OS
 Thumbs.db
 .DS_Storebackend/ml/artifacts/*.pkl
+
+backend/ml/artifacts/*.pkl
