@@ -69,3 +69,9 @@ Thumbs.db
 .DS_Storebackend/ml/artifacts/*.pkl
 
 backend/ml/artifacts/*.pkl
+
+# ML models
+*.pkl
+
+# Large datasets
+*.csv
