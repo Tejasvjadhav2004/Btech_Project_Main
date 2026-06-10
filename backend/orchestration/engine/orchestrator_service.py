@@ -463,23 +463,11 @@ class OrchestratorService:
 
         status_counts = {item["_id"]: item["count"] for item in collection.aggregate(pipeline)}
 
-        # Calculate execution time
-        completed = list(collection.find({
-            "status": "completed",
-            "execution_time_seconds": {"$exists": True}
-        }).limit(100))
-
-        avg_execution_time = 0
-        if completed:
-            avg_execution_time = sum(
-                w.get("execution_time_seconds", 0) for w in completed
-            ) / len(completed)
-
         # Get approval stats
         approval_stats = approval_service.get_approval_stats()
 
         return {
-            "total_workflows": sum(status_counts.values()),
+            "total_workflows": sum(status_counts.values()) if status_counts else 0,
             "active_workflows": sum(
                 status_counts.get(s.value, 0) for s in [
                     WorkflowStatus.CREATED,
@@ -491,7 +479,6 @@ class OrchestratorService:
             ),
             "completed_workflows": status_counts.get("completed", 0),
             "failed_workflows": status_counts.get("failed", 0),
-            "avg_execution_time_seconds": avg_execution_time,
             "approval_stats": approval_stats,
             "status_breakdown": status_counts
         }

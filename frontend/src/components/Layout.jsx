@@ -1,34 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from './Sidebar';
 import RoleSelector from './RoleSelector';
+import AIThinkingIndicator from './ui/AIThinkingIndicator';
+import { ChevronDown, Bell, Clock, Shield } from 'lucide-react';
 
 const Layout = ({ children, activeTab, setActiveTab, selectedRole, onRoleSelect }) => {
   const [showRoleSelector, setShowRoleSelector] = useState(false);
-  const [roleChanged, setRoleChanged] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Debug log when selectedRole changes
   useEffect(() => {
-    console.log('=== ROLE CHANGED ===');
-    console.log('New role:', selectedRole);
-    console.log('Dashboard should show:', getDashboardName(selectedRole));
-    setRoleChanged(true);
-    const timer = setTimeout(() => setRoleChanged(false), 1000);
-    return () => clearTimeout(timer);
-  }, [selectedRole]);
-
-  const handleRoleClick = () => {
-    setShowRoleSelector(true);
-  };
-
-  const handleRoleSelect = (role) => {
-    console.log('Role selected in Layout:', role);
-    onRoleSelect(role);
-    setShowRoleSelector(false);
-  };
-
-  const handleCancelRoleSelect = () => {
-    setShowRoleSelector(false);
-  };
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const getRoleDisplayName = (role) => {
     const roleNames = {
@@ -43,85 +27,91 @@ const Layout = ({ children, activeTab, setActiveTab, selectedRole, onRoleSelect 
 
   const getRoleColor = (role) => {
     const colors = {
-      'BUSINESS': '#3b82f6',      // Blue
-      'WAREHOUSE_MANAGER': '#f59e0b', // Amber
-      'STORE_MANAGER': '#10b981',    // Green
-      'LOGISTICS_MANAGER': '#8b5cf6', // Purple
-      'ADMIN': '#ef4444'             // Red
+      'BUSINESS': 'accent-blue',
+      'WAREHOUSE_MANAGER': 'severity-high',
+      'STORE_MANAGER': 'severity-healthy',
+      'LOGISTICS_MANAGER': 'accent-purple',
+      'ADMIN': 'severity-critical'
     };
-    return colors[role] || '#3b82f6';
+    return colors[role] || 'accent-blue';
   };
 
-  const getDashboardName = (role) => {
-    const names = {
-      'BUSINESS': 'Business Intelligence Dashboard',
-      'WAREHOUSE_MANAGER': 'Warehouse Manager Dashboard',
-      'STORE_MANAGER': 'Store Manager Dashboard',
-      'LOGISTICS_MANAGER': 'Logistics Manager Dashboard',
-      'ADMIN': 'Admin Dashboard'
-    };
-    return names[role] || 'Dashboard';
-  };
+  const roleColor = getRoleColor(selectedRole);
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f8fafc', fontFamily: 'Inter, sans-serif' }}>
+    <div className="flex min-h-screen bg-bg-primary">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} selectedRole={selectedRole} />
-      <div style={{ marginLeft: '250px', padding: '30px', width: 'calc(100% - 250px)', boxSizing: 'border-box' }}>
-        {/* Role Selector Button */}
-        <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ color: '#64748b', fontSize: '14px' }}>Current Role:</span>
+
+      {/* Main content area */}
+      <div className="ml-[260px] flex-1 flex flex-col min-h-screen">
+        {/* Top bar */}
+        <header className="sticky top-0 z-30 h-14 bg-bg-primary/80 backdrop-blur-xl border-b border-glass-border flex items-center justify-between px-6">
+          {/* Left: AI Status */}
+          <div className="flex items-center gap-4">
+            <AIThinkingIndicator size="sm" />
+          </div>
+
+          {/* Right: Role, Clock, Notifications */}
+          <div className="flex items-center gap-3">
+            {/* Live Clock */}
+            <div className="flex items-center gap-1.5 text-xs text-text-muted font-mono">
+              <Clock size={12} />
+              <span>{currentTime.toLocaleTimeString('en-US', { hour12: false })}</span>
+            </div>
+
+            <div className="w-px h-5 bg-glass-border" />
+
+            {/* Notifications */}
+            <button className="relative p-2 rounded-lg hover:bg-glass-bg transition-colors">
+              <Bell size={16} className="text-text-secondary" />
+              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-severity-critical animate-pulse-glow" />
+            </button>
+
+            <div className="w-px h-5 bg-glass-border" />
+
+            {/* Role Selector */}
             <button
-              onClick={handleRoleClick}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: getRoleColor(selectedRole),
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                transition: 'all 0.2s ease',
-                transform: roleChanged ? 'scale(1.05)' : 'scale(1)',
-                boxShadow: roleChanged ? `0 0 20px ${getRoleColor(selectedRole)}50` : 'none'
-              }}
+              onClick={() => setShowRoleSelector(true)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg bg-${roleColor}/10 border border-${roleColor}/20 hover:bg-${roleColor}/15 transition-all duration-200`}
             >
-              {getRoleDisplayName(selectedRole)}
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M6 9l6 6 6-6"/>
-              </svg>
+              <Shield size={14} className={`text-${roleColor}`} />
+              <span className={`text-xs font-medium text-${roleColor}`}>
+                {getRoleDisplayName(selectedRole)}
+              </span>
+              <ChevronDown size={12} className={`text-${roleColor} opacity-60`} />
             </button>
           </div>
+        </header>
 
-          {/* Visual indicator showing which dashboard is active */}
-          <div style={{
-            padding: '6px 12px',
-            backgroundColor: `${getRoleColor(selectedRole)}15`,
-            borderLeft: `3px solid ${getRoleColor(selectedRole)}`,
-            borderRadius: '4px',
-            fontSize: '12px',
-            color: getRoleColor(selectedRole),
-            fontWeight: '500'
-          }}>
-            Viewing: {getDashboardName(selectedRole)}
-          </div>
-        </div>
+        {/* Page content */}
+        <main className="flex-1 p-6">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
+        </main>
+      </div>
 
-        {children}
-
-        {/* Role Selector Modal */}
+      {/* Role Selector Modal */}
+      <AnimatePresence>
         {showRoleSelector && (
           <RoleSelector
-            onRoleSelect={handleRoleSelect}
-            onCancel={handleCancelRoleSelect}
+            onRoleSelect={(role) => {
+              onRoleSelect(role);
+              setShowRoleSelector(false);
+            }}
+            onCancel={() => setShowRoleSelector(false)}
             currentRole={selectedRole}
           />
         )}
-      </div>
+      </AnimatePresence>
     </div>
   );
 };

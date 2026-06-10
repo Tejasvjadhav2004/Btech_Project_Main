@@ -32,7 +32,7 @@ app.add_middleware(
 )
 
 # Include routers
-from api.routers import products, warehouses, stores, inventory, dashboard, orders, deliveries, signals, forecast, predictions, orchestration, llm_orchestration
+from api.routers import products, warehouses, stores, inventory, dashboard, orders, deliveries, signals, forecast, predictions, orchestration, llm_orchestration, demo
 
 logger.info("Registering routers...")
 app.include_router(products.router)
@@ -50,6 +50,8 @@ logger.info("Registering orchestration router...")
 app.include_router(orchestration.router)
 logger.info("Registering LLM orchestration router...")
 app.include_router(llm_orchestration.router)
+logger.info("Registering demo router...")
+app.include_router(demo.router)
 logger.info("All routers registered successfully")
 
 

@@ -467,6 +467,13 @@ async def run_all_detections():
     return result
 
 
+@router.post("/demo/generate")
+async def generate_demo_signals(count: int = Query(20, description="Number of signals to generate")):
+    """Generate demo signals for testing/preview purposes"""
+    result = signal_service.generate_demo_signals(count=count)
+    return result
+
+
 # ========================================
 # DECISION ENGINE ENDPOINTS
 # ========================================

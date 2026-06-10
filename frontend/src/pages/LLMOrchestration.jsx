@@ -1,503 +1,138 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { Bot, Brain, Loader, CheckCircle, Clock, Workflow, Zap } from 'lucide-react';
+import GlassCard from '../components/ui/GlassCard';
+import StatusBadge from '../components/ui/StatusBadge';
+import LoadingSkeleton from '../components/ui/LoadingSkeleton';
+import AIThinkingIndicator from '../components/ui/AIThinkingIndicator';
+import AnimatedCounter from '../components/ui/AnimatedCounter';
 import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  Button,
-  Chip,
-  Alert,
-  CircularProgress,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  List,
-  ListItem,
-  ListItemText,
-  Divider,
-  Paper,
-  Grid,
-  LinearProgress
-} from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import HistoryIcon from '@mui/icons-material/History';
-import InsightIcon from '@mui/icons-material/Insights';
-import WarningIcon from '@mui/icons-material/Warning';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ErrorIcon from '@mui/icons-material/Error';
-import {
-  getOrchestrationContext,
-  generateOrchestrationPlan,
-  getOrchestrationHistory,
-  getOrchestrationMetrics,
-  explainDecision
+  getOrchestrationContext, generateOrchestrationPlan, executeOrchestrationPlan,
+  getOrchestrationHistory, getOrchestrationMetrics, getOrchestrationHealth,
+  runAutonomousPipeline, processSignalPipeline
 } from '../services/api';
 
 const LLMOrchestration = () => {
-  const [context, setContext] = useState(null);
-  const [plan, setPlan] = useState(null);
+  const [health, setHealth] = useState(null);
   const [history, setHistory] = useState([]);
   const [metrics, setMetrics] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [selectedDecision, setSelectedDecision] = useState(null);
-  const [explanation, setExplanation] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
-    loadContext();
-    loadHistory();
-    loadMetrics();
+    (async () => {
+      try {
+        const [h, hist, met] = await Promise.all([
+          getOrchestrationHealth(), getOrchestrationHistory(15), getOrchestrationMetrics()
+        ]);
+        setHealth(h);
+        setHistory(hist?.history || []);
+        setMetrics(met?.metrics || null);
+      } catch (e) {} finally { setLoading(false); }
+    })();
   }, []);
 
-  const loadContext = async () => {
-    try {
-      const data = await getOrchestrationContext();
-      if (data.success) {
-        setContext(data.context);
-      }
-    } catch (err) {
-      console.error('Error loading context:', err);
-    }
+  const handleGenerate = async () => {
+    setGenerating(true);
+    try { await generateOrchestrationPlan({ dry_run: true }); }
+    catch (e) {} finally { setGenerating(false); }
   };
 
-  const loadHistory = async () => {
-    try {
-      const data = await getOrchestrationHistory();
-      if (data.success) {
-        setHistory(data.history || []);
-      }
-    } catch (err) {
-      console.error('Error loading history:', err);
-    }
-  };
-
-  const loadMetrics = async () => {
-    try {
-      const data = await getOrchestrationMetrics();
-      if (data.success) {
-        setMetrics(data.metrics);
-      }
-    } catch (err) {
-      console.error('Error loading metrics:', err);
-    }
-  };
-
-  const handleGeneratePlan = async (dryRun = true) => {
-    setLoading(true);
-    setError(null);
-    setPlan(null);
-
-    try {
-      const result = await generateOrchestrationPlan({ dry_run: dryRun });
-      if (result.success) {
-        setPlan(result);
-        loadHistory(); // Refresh history
-      } else {
-        setError(result.error || 'Failed to generate plan');
-      }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleExplain = async (decisionId) => {
-    try {
-      const data = await explainDecision(decisionId);
-      if (data.success) {
-        setExplanation(data.explanation);
-        setSelectedDecision(decisionId);
-      }
-    } catch (err) {
-      console.error('Error getting explanation:', err);
-    }
-  };
-
-  const getSeverityColor = (severity) => {
-    switch (severity) {
-      case 'critical': return 'error';
-      case 'high': return 'warning';
-      case 'medium': return 'info';
-      default: return 'default';
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'success': return <CheckCircleIcon color="success" />;
-      case 'failed': return <ErrorIcon color="error" />;
-      default: return <CircularProgress size={20} />;
-    }
-  };
+  if (loading) return <LoadingSkeleton variant="card" count={4} />;
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <AutoAwesomeIcon color="primary" />
-        LLM Orchestration Layer
-      </Typography>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-text-primary flex items-center gap-2">
+            <Bot size={24} className="text-accent-purple" /> LLM Orchestrator
+          </h1>
+          <p className="text-sm text-text-muted mt-1">
+            Large Language Model-powered autonomous decision engine
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <StatusBadge
+            type={health?.status === 'healthy' ? 'healthy' : 'warning'}
+            pulse={health?.status === 'healthy'} size="md"
+          />
+          <button onClick={handleGenerate} disabled={generating}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent-purple/15 border border-accent-purple/25 text-accent-purple text-sm font-medium hover:bg-accent-purple/25 transition-all disabled:opacity-50">
+            {generating ? <Loader size={14} className="animate-spin" /> : <Brain size={14} />}
+            Generate Plan
+          </button>
+        </div>
+      </div>
 
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        AI-powered autonomous orchestration for multi-agent supply chain optimization
-      </Typography>
+      {generating && <AIThinkingIndicator size="md" />}
 
-      {/* Action Controls */}
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-            <Button
-              variant="contained"
-              startIcon={loading ? <CircularProgress size={20} /> : <PlayArrowIcon />}
-              onClick={() => handleGeneratePlan(true)}
-              disabled={loading}
-              color="primary"
-            >
-              Generate Plan (Dry Run)
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={loading ? <CircularProgress size={20} /> : <PlayArrowIcon />}
-              onClick={() => handleGeneratePlan(false)}
-              disabled={loading}
-              color="secondary"
-            >
-              Generate & Execute
-            </Button>
-            <Button
-              variant="outlined"
-              startIcon={<InsightIcon />}
-              onClick={loadContext}
-            >
-              Refresh Context
-            </Button>
-          </Box>
-        </CardContent>
-      </Card>
-
-      {/* Error Alert */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
-          {error}
-        </Alert>
+      {/* Metrics */}
+      {metrics && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { l: 'Total Decisions', v: metrics.total_decisions || 0, c: 'text-accent-blue' },
+            { l: 'Pending', v: metrics.status_breakdown?.pending || 0, c: 'text-severity-high' },
+            { l: 'Completed', v: metrics.status_breakdown?.completed || 0, c: 'text-severity-healthy' },
+            { l: 'Failed', v: metrics.status_breakdown?.failed || 0, c: 'text-severity-critical' },
+          ].map((m, i) => (
+            <GlassCard key={i} delay={i * 0.05}>
+              <p className="text-[10px] uppercase text-text-muted font-semibold">{m.l}</p>
+              <p className={`text-2xl font-bold mt-1 ${m.c}`}>
+                <AnimatedCounter value={m.v} decimals={0} />
+              </p>
+            </GlassCard>
+          ))}
+        </div>
       )}
 
-      {/* Context Summary */}
-      {context && (
-        <Card sx={{ mb: 3 }}>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>
-              Operational Context
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={6} sm={3}>
-                <Paper sx={{ p: 2, textAlign: 'center' }}>
-                  <Typography variant="h4" color="primary">
-                    {context.signals?.total_active || 0}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Active Signals
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <Paper sx={{ p: 2, textAlign: 'center' }}>
-                  <Typography variant="h4" color="warning.main">
-                    {context.critical_issues?.length || 0}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Critical Issues
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <Paper sx={{ p: 2, textAlign: 'center' }}>
-                  <Typography variant="h4" color="info.main">
-                    {context.inventory_summary?.total_low_stock || 0}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Low Stock Items
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <Paper sx={{ p: 2, textAlign: 'center' }}>
-                  <Typography variant="h4">
-                    {context.warehouse_summary?.avg_utilization_percent?.toFixed(1) || 0}%
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Avg Warehouse Util
-                  </Typography>
-                  <LinearProgress
-                    variant="determinate"
-                    value={context.warehouse_summary?.avg_utilization_percent || 0}
-                    sx={{ mt: 1 }}
-                  />
-                </Paper>
-              </Grid>
-            </Grid>
-
-            {/* Recommended Focus */}
-            {context.recommended_focus?.length > 0 && (
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="subtitle2" gutterBottom>
-                  Recommended Focus Areas:
-                </Typography>
-                <List dense>
-                  {context.recommended_focus.map((focus, idx) => (
-                    <ListItem key={idx}>
-                      <ListItemText primary={focus} />
-                    </ListItem>
-                  ))}
-                </List>
-              </Box>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Generated Plan */}
-      {plan && (
-        <Card sx={{ mb: 3 }}>
-          <CardContent>
-            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <AutoAwesomeIcon color="primary" />
-              Generated Orchestration Plan
-              <Chip
-                label={plan.decision?.llm_plan?.priority || 'medium'}
-                size="small"
-                color={getSeverityColor(plan.decision?.llm_plan?.severity)}
-              />
-            </Typography>
-
-            {plan.decision?.llm_plan && (
-              <Box>
-                <Alert severity="info" sx={{ mb: 2 }}>
-                  <Typography variant="subtitle2">Situation:</Typography>
-                  {plan.decision.llm_plan.situation}
-                </Alert>
-
-                {/* Reasoning */}
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="subtitle2" gutterBottom>
-                    Reasoning:
-                  </Typography>
-                  <List dense>
-                    {plan.decision.llm_plan.reasoning?.map((reason, idx) => (
-                      <ListItem key={idx}>
-                        <ListItemText primary={`• ${reason}`} />
-                      </ListItem>
-                    ))}
-                  </List>
-                </Box>
-
-                {/* Actions */}
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="subtitle2" gutterBottom>
-                    Recommended Actions:
-                  </Typography>
-                  {plan.decision.llm_plan.actions?.map((action, idx) => (
-                    <Paper key={idx} sx={{ p: 2, mb: 1 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Box>
-                          <Chip
-                            label={action.action_type}
-                            size="small"
-                            color="primary"
-                            sx={{ mr: 1 }}
-                          />
-                          <Chip
-                            label={action.priority}
-                            size="small"
-                            variant="outlined"
-                          />
-                        </Box>
-                        {action.reason && (
-                          <Typography variant="body2" color="text.secondary">
-                            {action.reason}
-                          </Typography>
-                        )}
-                      </Box>
-                      {action.sku && (
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                          SKU: {action.sku} | Quantity: {action.quantity || 'N/A'}
-                        </Typography>
-                      )}
-                    </Paper>
-                  ))}
-                </Box>
-
-                {/* Expected Outcome & Risk */}
-                <Grid container spacing={2}>
-                  <Grid item xs={6}>
-                    <Typography variant="subtitle2">Expected Outcome:</Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {plan.decision.llm_plan.expected_outcome || 'Not specified'}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="subtitle2">Risk Assessment:</Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {plan.decision.llm_plan.risk_assessment || 'Not specified'}
-                    </Typography>
-                  </Grid>
-                </Grid>
-
-                {/* Validation Status */}
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="subtitle2" gutterBottom>
-                    Validation Status:
-                  </Typography>
-                  {plan.decision.validation_results?.map((v, idx) => (
-                    <Chip
-                      key={idx}
-                      label={v.valid ? '✓ Valid' : `✗ ${v.errors?.join(', ')}`}
-                      color={v.valid ? 'success' : 'error'}
-                      size="small"
-                      sx={{ mr: 1 }}
-                    />
-                  ))}
-                </Box>
-
-                {/* Confidence Score */}
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="subtitle2" gutterBottom>
-                    Confidence Score: {(plan.decision.llm_plan.confidence * 100).toFixed(0)}%
-                  </Typography>
-                  <LinearProgress
-                    variant="determinate"
-                    value={(plan.decision.llm_plan.confidence || 0) * 100}
-                    sx={{ height: 10, borderRadius: 5 }}
-                  />
-                </Box>
-              </Box>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Orchestration History */}
-      <Card>
-        <CardContent>
-          <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <HistoryIcon color="primary" />
-            Orchestration History
-          </Typography>
-
+      {/* History */}
+      <div>
+        <h3 className="text-sm font-semibold text-text-primary mb-3 flex items-center gap-2">
+          <Clock size={16} className="text-text-muted" /> Decision History
+        </h3>
+        <div className="space-y-3">
           {history.length === 0 ? (
-            <Typography color="text.secondary">No orchestration decisions yet</Typography>
+            <div className="text-center py-12 text-text-muted text-sm">
+              No LLM orchestration history yet
+            </div>
           ) : (
-            <List>
-              {history.map((item, idx) => (
-                <React.Fragment key={idx}>
-                  <ListItem
-                    alignItems="flex-start"
-                    secondaryAction={
-                      <Button
-                        size="small"
-                        onClick={() => handleExplain(item.decision_id)}
-                      >
-                        Explain
-                      </Button>
-                    }
-                  >
-                    <ListItemText
-                      primary={
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Chip
-                            label={item.llm_plan?.priority || 'unknown'}
-                            size="small"
-                            color={getSeverityColor(item.llm_plan?.severity)}
-                          />
-                          <Typography variant="body2">
-                            {item.llm_plan?.situation || 'No situation summary'}
-                          </Typography>
-                        </Box>
+            history.slice(0, 10).map((item, i) => (
+              <motion.div key={item.id || i}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}>
+                <GlassCard padding="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <StatusBadge
+                        type={item.status === 'success' ? 'success' : item.status === 'failed' ? 'critical' : 'info'}
+                        size="xs"
+                      />
+                      <span className="text-xs font-mono text-text-muted">
+                        {(item.decision_id || item.plan_id || item.id || '—').toString().slice(0, 16)}
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-text-dim font-mono">
+                      {item.created_at ? new Date(item.created_at).toLocaleString() : ''}
+                    </span>
+                  </div>
+                  <p className="text-sm text-text-secondary">
+                    {item.summary || item.reasoning || item.description || 'LLM orchestration decision'}
+                  </p>
+                  {item.actions_count != null && (
+                    <p className="text-[10px] text-text-dim mt-1">
+                      {item.actions_count} actions • Confidence: {
+                        item.confidence ? `${(item.confidence * 100).toFixed(0)}%` : 'N/A'
                       }
-                      secondary={
-                        <Box sx={{ mt: 1 }}>
-                          <Typography variant="caption" color="text.secondary">
-                            {new Date(item.timestamp).toLocaleString()}
-                          </Typography>
-                          <Chip
-                            label={item.can_auto_execute ? 'Auto-Execute' : 'Requires Review'}
-                            size="small"
-                            variant="outlined"
-                            sx={{ ml: 1 }}
-                          />
-                        </Box>
-                      }
-                    />
-                  </ListItem>
-                  {idx < history.length - 1 && <Divider />}
-                </React.Fragment>
-              ))}
-            </List>
+                    </p>
+                  )}
+                </GlassCard>
+              </motion.div>
+            ))
           )}
-        </CardContent>
-      </Card>
-
-      {/* Explanation Modal */}
-      {explanation && selectedDecision && (
-        <Card sx={{ mt: 3 }}>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>
-              Decision Explanation: {selectedDecision}
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <Typography variant="subtitle2">Situation</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {explanation.situation}
-                </Typography>
-              </Grid>
-
-              <Grid item xs={12}>
-                <Typography variant="subtitle2">Reasoning Chain</Typography>
-                <List dense>
-                  {explanation.reasoning?.map((r, idx) => (
-                    <ListItem key={idx}>
-                      <ListItemText primary={`${idx + 1}. ${r}`} />
-                    </ListItem>
-                  ))}
-                </List>
-              </Grid>
-
-              <Grid item xs={6}>
-                <Typography variant="subtitle2">Expected Outcome</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {explanation.expected_outcome}
-                </Typography>
-              </Grid>
-
-              <Grid item xs={6}>
-                <Typography variant="subtitle2">Risk Assessment</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {explanation.risk_assessment}
-                </Typography>
-              </Grid>
-
-              <Grid item xs={12}>
-                <Typography variant="subtitle2">Context at Decision Time</Typography>
-                <Paper sx={{ p: 1, bgcolor: 'grey.100' }}>
-                  <pre style={{ fontSize: '0.75rem', margin: 0, overflow: 'auto' }}>
-                    {JSON.stringify(explanation.context_at_decision, null, 2)}
-                  </pre>
-                </Paper>
-              </Grid>
-            </Grid>
-
-            <Button sx={{ mt: 2 }} onClick={() => { setExplanation(null); setSelectedDecision(null); }}>
-              Close
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 };
 

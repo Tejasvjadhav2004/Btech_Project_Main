@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import {
   Activity, AlertTriangle, CheckCircle, Clock, XCircle, Loader, Play, Pause,
-  ChevronDown, ChevronUp, RefreshCw, Check, X, Zap, BarChart3
+  ChevronDown, ChevronUp, RefreshCw, Check, X, Zap, BarChart3, Cpu
 } from 'lucide-react';
+import GlassCard from '../components/ui/GlassCard';
+import StatusBadge from '../components/ui/StatusBadge';
+import LoadingSkeleton from '../components/ui/LoadingSkeleton';
+import AnimatedCounter from '../components/ui/AnimatedCounter';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   BarChart, Bar, PieChart, Pie, Cell
@@ -34,7 +39,7 @@ const Orchestration = () => {
 
   useEffect(() => {
     loadAllData();
-    const interval = setInterval(loadAllData, 30000); // Refresh every 30s
+    const interval = setInterval(loadAllData, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -165,129 +170,63 @@ const Orchestration = () => {
   ];
 
   if (loading) {
-    return (
-      <div style={{ padding: '40px', textAlign: 'center' }}>
-        <Loader className="animate-spin" size={48} style={{ margin: '0 auto', color: '#3b82f6' }} />
-        <p style={{ marginTop: '20px', color: '#64748b' }}>Loading Orchestration Dashboard...</p>
-      </div>
-    );
+    return <div className="space-y-4"><LoadingSkeleton variant="kpi" count={4} /><LoadingSkeleton variant="table" /></div>;
   }
 
   return (
-    <div style={{ padding: '24px', backgroundColor: '#f8fafc', minHeight: '100vh' }}>
+    <div className="space-y-6">
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+      <div className="flex items-center justify-between">
         <div>
-          <h1 style={{ color: '#0f172a', margin: 0, fontSize: '28px', fontWeight: '700' }}>
-            <Zap size={32} style={{ display: 'inline', marginRight: '12px', color: '#3b82f6' }} />
-            Orchestration Command Center
+          <h1 className="text-2xl font-bold text-text-primary flex items-center gap-2">
+            <Cpu size={24} className="text-accent-cyan" /> Orchestration Engine
           </h1>
-          <p style={{ color: '#64748b', margin: '8px 0 0', fontSize: '14px' }}>
-            Autonomous workflow orchestration and execution monitoring
-          </p>
+          <p className="text-sm text-text-muted mt-1">Autonomous workflow orchestration and execution monitoring</p>
         </div>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '8px 16px',
-            borderRadius: '20px',
-            backgroundColor: health?.orchestrator_active ? '#dcfce7' : '#fee2e2'
-          }}>
-            <div style={{
-              width: '10px',
-              height: '10px',
-              borderRadius: '50%',
-              backgroundColor: health?.orchestrator_active ? '#10b981' : '#ef4444'
-            }} />
-            <span style={{ fontSize: '14px', fontWeight: '600', color: health?.orchestrator_active ? '#166534' : '#991b1b' }}>
+        <div className="flex items-center gap-3">
+          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${health?.orchestrator_active ? 'bg-severity-healthy/20' : 'bg-severity-critical/20'}`}>
+            <span className={`status-dot ${health?.orchestrator_active ? 'bg-severity-healthy' : 'bg-severity-critical'}`} />
+            <span className={`text-xs font-medium ${health?.orchestrator_active ? 'text-severity-healthy' : 'text-severity-critical'}`}>
               {health?.orchestrator_active ? 'Active' : 'Inactive'}
             </span>
           </div>
-          <button onClick={loadAllData} style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '10px 20px',
-            backgroundColor: '#3b82f6',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontWeight: '600'
-          }}>
-            <RefreshCw size={18} />
-            Refresh
+          <button onClick={loadAllData} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent-blue/15 border border-accent-blue/25 text-accent-blue text-sm font-medium hover:bg-accent-blue/25 transition-all">
+            <RefreshCw size={16} /> Refresh
           </button>
         </div>
       </div>
 
       {/* Metrics Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-        <MetricCard
-          title="Active Workflows"
-          value={metrics?.active_workflows || 0}
-          icon={<Activity size={24} />}
-          color="#3b82f6"
-        />
-        <MetricCard
-          title="Pending Approvals"
-          value={approvals.length}
-          icon={<Clock size={24} />}
-          color="#f59e0b"
-        />
-        <MetricCard
-          title="Completed Today"
-          value={metrics?.completed_workflows || 0}
-          icon={<CheckCircle size={24} />}
-          color="#10b981"
-        />
-        <MetricCard
-          title="Failed"
-          value={metrics?.failed_workflows || 0}
-          icon={<XCircle size={24} />}
-          color="#ef4444"
-        />
-        <MetricCard
-          title="Avg Execution Time"
-          value={`${(metrics?.avg_execution_time_seconds || 0).toFixed(1)}s`}
-          icon={<BarChart3 size={24} />}
-          color="#8b5cf6"
-        />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <GlassCard>
+          <p className="text-[10px] uppercase text-text-muted font-semibold">Active Workflows</p>
+          <p className="text-2xl font-bold text-accent-blue mt-1"><AnimatedCounter value={metrics?.active_workflows || 0} decimals={0} /></p>
+        </GlassCard>
+        <GlassCard>
+          <p className="text-[10px] uppercase text-text-muted font-semibold">Pending Approvals</p>
+          <p className="text-2xl font-bold text-severity-high mt-1"><AnimatedCounter value={approvals.length} decimals={0} /></p>
+        </GlassCard>
+        <GlassCard>
+          <p className="text-[10px] uppercase text-text-muted font-semibold">Completed Today</p>
+          <p className="text-2xl font-bold text-severity-healthy mt-1"><AnimatedCounter value={metrics?.completed_workflows || 0} decimals={0} /></p>
+        </GlassCard>
+        <GlassCard>
+          <p className="text-[10px] uppercase text-text-muted font-semibold">Failed</p>
+          <p className="text-2xl font-bold text-severity-critical mt-1"><AnimatedCounter value={metrics?.failed_workflows || 0} decimals={0} /></p>
+        </GlassCard>
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: '4px', marginBottom: '20px', backgroundColor: 'white', padding: '4px', borderRadius: '12px' }}>
-        {['active', 'approvals', 'history', 'actions'].map(tab => (
+      <div className="flex items-center gap-2">
+        {['active', 'approvals', 'actions'].map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            style={{
-              flex: 1,
-              padding: '12px 20px',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontWeight: '600',
-              fontSize: '14px',
-              backgroundColor: activeTab === tab ? '#3b82f6' : 'transparent',
-              color: activeTab === tab ? 'white' : '#64748b',
-              transition: 'all 0.2s'
-            }}
+            className={`px-4 py-2 rounded-lg text-xs font-medium transition-all ${activeTab === tab ? 'bg-accent-blue/15 text-accent-blue border border-accent-blue/25' : 'border border-glass-border text-text-muted hover:bg-glass-bg'}`}
           >
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
             {tab === 'approvals' && approvals.length > 0 && (
-              <span style={{
-                marginLeft: '8px',
-                padding: '2px 8px',
-                borderRadius: '10px',
-                backgroundColor: activeTab === tab ? 'rgba(255,255,255,0.3)' : '#ef4444',
-                color: 'white',
-                fontSize: '12px'
-              }}>
-                {approvals.length}
-              </span>
+              <span className="ml-2 px-1.5 py-0.5 rounded bg-severity-critical text-white text-[10px]">{approvals.length}</span>
             )}
           </button>
         ))}
@@ -295,362 +234,202 @@ const Orchestration = () => {
 
       {/* Content Based on Tab */}
       {activeTab === 'active' && (
-        <div>
+        <div className="space-y-6">
           {/* Charts */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
-            <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-              <h3 style={{ margin: '0 0 16px', color: '#0f172a' }}>Workflow Status Distribution</h3>
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
-                  <Pie
-                    data={statusDistribution}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    dataKey="value"
-                    label={({ name, value }) => `${name}: ${value}`}
-                  >
-                    {statusDistribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[entry.name.toLowerCase().replace(' ', '_')] || '#6b7280'} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <GlassCard hover={false}>
+              <h3 className="text-sm font-semibold text-text-primary mb-4">Workflow Status Distribution</h3>
+              {statusDistribution.length > 0 ? (
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie data={statusDistribution} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={({ name, value }) => `${name}: ${value}`}>
+                      {statusDistribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[entry.name.toLowerCase().replace(' ', '_')] || '#6b7280'} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="text-center py-8 text-text-muted text-sm">No workflow data</div>
+              )}
+            </GlassCard>
 
-            <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-              <h3 style={{ margin: '0 0 16px', color: '#0f172a' }}>Priority Breakdown</h3>
+            <GlassCard hover={false}>
+              <h3 className="text-sm font-semibold text-text-primary mb-4">Priority Breakdown</h3>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={priorityDistribution}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  <XAxis dataKey="name" stroke="#64748b" fontSize={11} />
+                  <YAxis stroke="#64748b" fontSize={11} />
+                  <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px' }} />
                   <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
-            </div>
+            </GlassCard>
           </div>
 
           {/* Workflows List */}
-          <div style={{ backgroundColor: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            <div style={{ padding: '20px', borderBottom: '1px solid #e2e8f0' }}>
-              <h3 style={{ margin: 0, color: '#0f172a' }}>Active Workflows</h3>
+          <GlassCard padding="p-0" hover={false}>
+            <div className="px-4 py-3 border-b border-glass-border">
+              <h3 className="text-sm font-semibold text-text-primary">Active Workflows</h3>
             </div>
             {workflows.length === 0 ? (
-              <div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
-                <Activity size={48} style={{ opacity: 0.3 }} />
-                <p style={{ marginTop: '12px' }}>No active workflows</p>
+              <div className="text-center py-12 text-text-muted text-sm">
+                <Activity size={32} className="mx-auto mb-3 opacity-30" />
+                No active workflows
               </div>
             ) : (
-              <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
-                {workflows.map(workflow => (
-                  <WorkflowCard
+              <div className="max-h-[500px] overflow-y-auto">
+                {workflows.map((workflow, i) => (
+                  <motion.div
                     key={workflow.workflow_id}
-                    workflow={workflow}
-                    onViewDetails={() => setSelectedWorkflow(workflow)}
-                    getStatusColor={getStatusColor}
-                    getStatusIcon={getStatusIcon}
-                  />
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: i * 0.03 }}
+                    onClick={() => setSelectedWorkflow(workflow)}
+                    className="px-4 py-3 border-b border-glass-border/50 hover:bg-bg-card-hover cursor-pointer transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center`} style={{ backgroundColor: `${getStatusColor(workflow.status)}20`, color: getStatusColor(workflow.status) }}>
+                          {getStatusIcon(workflow.status)}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-text-primary">{workflow.workflow_id}</span>
+                            <span className="px-2 py-0.5 rounded text-[10px] font-semibold text-white" style={{ backgroundColor: COLORS[workflow.priority] || '#6b7280' }}>
+                              {workflow.priority?.toUpperCase()}
+                            </span>
+                          </div>
+                          <p className="text-xs text-text-muted mt-0.5">{workflow.workflow_type?.replace(/_/g, ' ')}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="px-2 py-1 rounded text-xs font-semibold" style={{ backgroundColor: `${getStatusColor(workflow.status)}20`, color: getStatusColor(workflow.status) }}>
+                          {workflow.status?.toUpperCase().replace(/_/g, ' ')}
+                        </div>
+                        <p className="text-[10px] text-text-dim mt-1">{workflow.steps?.length || 0} steps</p>
+                      </div>
+                    </div>
+                  </motion.div>
                 ))}
               </div>
             )}
-          </div>
+          </GlassCard>
         </div>
       )}
 
       {activeTab === 'approvals' && (
-        <div style={{ backgroundColor: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-          <div style={{ padding: '20px', borderBottom: '1px solid #e2e8f0' }}>
-            <h3 style={{ margin: 0, color: '#0f172a' }}>Pending Approvals</h3>
+        <GlassCard padding="p-0" hover={false}>
+          <div className="px-4 py-3 border-b border-glass-border">
+            <h3 className="text-sm font-semibold text-text-primary">Pending Approvals</h3>
           </div>
           {approvals.length === 0 ? (
-            <div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
-              <CheckCircle size={48} style={{ opacity: 0.3 }} />
-              <p style={{ marginTop: '12px' }}>No pending approvals</p>
+            <div className="text-center py-12 text-text-muted text-sm">
+              <CheckCircle size={32} className="mx-auto mb-3 opacity-30" />
+              No pending approvals
             </div>
           ) : (
             <div>
-              {approvals.map(approval => (
-                <div key={approval.approval_id} style={{
-                  padding: '20px',
-                  borderBottom: '1px solid #e2e8f0',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                      <span style={{
-                        padding: '4px 12px',
-                        borderRadius: '4px',
-                        backgroundColor: COLORS[approval.risk_level] || '#6b7280',
-                        color: 'white',
-                        fontSize: '12px',
-                        fontWeight: '600'
-                      }}>
-                        {approval.risk_level?.toUpperCase()}
-                      </span>
-                      <span style={{ fontWeight: '600', color: '#0f172a' }}>{approval.workflow_type}</span>
+              {approvals.map((approval, i) => (
+                <motion.div
+                  key={approval.approval_id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: i * 0.03 }}
+                  className="p-4 border-b border-glass-border/50"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold text-white" style={{ backgroundColor: COLORS[approval.risk_level] || '#6b7280' }}>
+                          {approval.risk_level?.toUpperCase()}
+                        </span>
+                        <span className="text-sm font-semibold text-text-primary">{approval.workflow_type}</span>
+                      </div>
+                      <p className="text-xs text-text-secondary mb-2">{approval.action_summary}</p>
+                      <div className="flex gap-4 text-[10px] text-text-muted">
+                        <span>Required: <span className="text-text-secondary">{approval.required_role}</span></span>
+                        <span>Expires: <span className="text-text-secondary">{approval.expires_at ? new Date(approval.expires_at).toLocaleString() : 'N/A'}</span></span>
+                      </div>
                     </div>
-                    <p style={{ margin: '4px 0', color: '#64748b', fontSize: '14px' }}>
-                      {approval.action_summary}
-                    </p>
-                    <div style={{ display: 'flex', gap: '16px', marginTop: '8px', fontSize: '12px', color: '#94a3b8' }}>
-                      <span>Required Role: <strong>{approval.required_role}</strong></span>
-                      <span>Expires: {approval.expires_at ? new Date(approval.expires_at).toLocaleString() : 'N/A'}</span>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleApprove(approval.workflow_id)}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-severity-healthy/20 text-severity-healthy text-xs font-medium hover:bg-severity-healthy/30 transition-colors"
+                      >
+                        <Check size={14} /> Approve
+                      </button>
+                      <button
+                        onClick={() => {
+                          const reason = prompt('Rejection reason:');
+                          if (reason) handleReject(approval.workflow_id, reason);
+                        }}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-severity-critical/20 text-severity-critical text-xs font-medium hover:bg-severity-critical/30 transition-colors"
+                      >
+                        <X size={14} /> Reject
+                      </button>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button
-                      onClick={() => handleApprove(approval.workflow_id)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '10px 20px',
-                        backgroundColor: '#10b981',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        fontWeight: '600'
-                      }}
-                    >
-                      <Check size={18} />
-                      Approve
-                    </button>
-                    <button
-                      onClick={() => {
-                        const reason = prompt('Rejection reason:');
-                        if (reason) handleReject(approval.workflow_id, reason);
-                      }}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '10px 20px',
-                        backgroundColor: '#ef4444',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        fontWeight: '600'
-                      }}
-                    >
-                      <X size={18} />
-                      Reject
-                    </button>
-                  </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           )}
-        </div>
-      )}
-
-      {activeTab === 'history' && (
-        <div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
-          <BarChart3 size={48} style={{ opacity: 0.3 }} />
-          <p style={{ marginTop: '12px' }}>Workflow history view coming soon...</p>
-        </div>
+        </GlassCard>
       )}
 
       {activeTab === 'actions' && (
-        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-          <h3 style={{ margin: '0 0 20px', color: '#0f172a' }}>Manual Orchestration Triggers</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
-            <ActionButton
-              title="Trigger Stockout Mitigation"
-              description="Manually trigger stockout mitigation workflow"
-              icon={<AlertTriangle size={20} />}
-              onClick={() => handleTriggerOrchestration('STOCKOUT_MITIGATION', 'high')}
-              color="#ef4444"
-            />
-            <ActionButton
-              title="Inventory Rebalance"
-              description="Trigger inventory rebalancing across warehouses"
-              icon={<RefreshCw size={20} />}
-              onClick={() => handleTriggerOrchestration('INVENTORY_REBALANCE', 'medium')}
-              color="#3b82f6"
-            />
-            <ActionButton
-              title="Delay Recovery"
-              description="Trigger delivery delay recovery workflow"
-              icon={<Clock size={20} />}
-              onClick={() => handleTriggerOrchestration('DELAY_RECOVERY', 'medium')}
-              color="#f59e0b"
-            />
-            <ActionButton
-              title="Demand Surge Response"
-              description="Trigger demand surge response workflow"
-              icon={<Activity size={20} />}
-              onClick={() => handleTriggerOrchestration('DEMAND_SURGE_RESPONSE', 'high')}
-              color="#8b5cf6"
-            />
+        <GlassCard>
+          <h3 className="text-sm font-semibold text-text-primary mb-4">Manual Orchestration Triggers</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[
+              { title: 'Stockout Mitigation', desc: 'Manually trigger stockout mitigation workflow', icon: AlertTriangle, color: 'text-severity-critical', action: () => handleTriggerOrchestration('STOCKOUT_MITIGATION', 'high') },
+              { title: 'Inventory Rebalance', desc: 'Trigger inventory rebalancing across warehouses', icon: RefreshCw, color: 'text-accent-blue', action: () => handleTriggerOrchestration('INVENTORY_REBALANCE', 'medium') },
+              { title: 'Delay Recovery', desc: 'Trigger delivery delay recovery workflow', icon: Clock, color: 'text-severity-high', action: () => handleTriggerOrchestration('DELAY_RECOVERY', 'medium') },
+              { title: 'Demand Surge Response', desc: 'Trigger demand surge response workflow', icon: Activity, color: 'text-accent-purple', action: () => handleTriggerOrchestration('DEMAND_SURGE_RESPONSE', 'high') },
+            ].map((btn, i) => (
+              <button
+                key={i}
+                onClick={btn.action}
+                className="p-4 rounded-lg border border-glass-border bg-bg-card hover:bg-bg-card-hover text-left transition-all hover:border-accent-blue/30"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <btn.icon size={18} className={btn.color} />
+                  <span className="text-sm font-semibold text-text-primary">{btn.title}</span>
+                </div>
+                <p className="text-xs text-text-muted">{btn.desc}</p>
+              </button>
+            ))}
           </div>
-        </div>
+        </GlassCard>
       )}
 
       {/* Workflow Details Modal */}
       {selectedWorkflow && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '12px',
-            width: '80%',
-            maxWidth: '800px',
-            maxHeight: '80vh',
-            overflowY: 'auto'
-          }}>
-            <div style={{ padding: '24px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between' }}>
-              <h3 style={{ margin: 0 }}>Workflow Details: {selectedWorkflow.workflow_id}</h3>
-              <button onClick={() => setSelectedWorkflow(null)} style={{ border: 'none', background: 'none', cursor: 'pointer' }}>
-                <X size={24} />
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setSelectedWorkflow(null)}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="glass rounded-xl w-[90%] max-w-2xl max-h-[80vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-4 border-b border-glass-border">
+              <h3 className="text-sm font-semibold text-text-primary">Workflow: {selectedWorkflow.workflow_id}</h3>
+              <button onClick={() => setSelectedWorkflow(null)} className="text-text-muted hover:text-text-primary transition-colors">
+                <X size={20} />
               </button>
             </div>
-            <div style={{ padding: '24px' }}>
-              <pre style={{ whiteSpace: 'pre-wrap', fontSize: '12px', backgroundColor: '#f8fafc', padding: '16px', borderRadius: '8px' }}>
+            <div className="p-5 overflow-y-auto max-h-[60vh]">
+              <pre className="text-xs text-text-secondary bg-bg-primary/50 p-4 rounded-lg overflow-x-auto whitespace-pre-wrap">
                 {JSON.stringify(selectedWorkflow, null, 2)}
               </pre>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
     </div>
   );
 };
-
-// Helper Components
-const MetricCard = ({ title, value, icon, color }) => (
-  <div style={{
-    backgroundColor: 'white',
-    padding: '20px',
-    borderRadius: '12px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '16px'
-  }}>
-    <div style={{
-      width: '48px',
-      height: '48px',
-      borderRadius: '12px',
-      backgroundColor: `${color}15`,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      color: color
-    }}>
-      {icon}
-    </div>
-    <div>
-      <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>{title}</p>
-      <p style={{ margin: '4px 0 0', fontSize: '24px', fontWeight: '700', color: '#0f172a' }}>{value}</p>
-    </div>
-  </div>
-);
-
-const WorkflowCard = ({ workflow, onViewDetails, getStatusColor, getStatusIcon }) => (
-  <div style={{
-    padding: '16px 20px',
-    borderBottom: '1px solid #e2e8f0',
-    cursor: 'pointer',
-    transition: 'background 0.2s'
-  }}
-  onClick={onViewDetails}
-  >
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div style={{
-          width: '32px',
-          height: '32px',
-          borderRadius: '8px',
-          backgroundColor: `${getStatusColor(workflow.status)}15`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: getStatusColor(workflow.status)
-        }}>
-          {getStatusIcon(workflow.status)}
-        </div>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontWeight: '600', color: '#0f172a' }}>{workflow.workflow_id}</span>
-            <span style={{
-              padding: '2px 8px',
-              borderRadius: '4px',
-              backgroundColor: COLORS[workflow.priority] || '#6b7280',
-              color: 'white',
-              fontSize: '11px',
-              fontWeight: '600'
-            }}>
-              {workflow.priority?.toUpperCase()}
-            </span>
-          </div>
-          <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748b' }}>
-            {workflow.workflow_type?.replace(/_/g, ' ')}
-          </p>
-        </div>
-      </div>
-      <div style={{ textAlign: 'right' }}>
-        <div style={{
-          padding: '4px 12px',
-          borderRadius: '4px',
-          backgroundColor: `${getStatusColor(workflow.status)}15`,
-          color: getStatusColor(workflow.status),
-          fontSize: '12px',
-          fontWeight: '600'
-        }}>
-          {workflow.status?.toUpperCase().replace(/_/g, ' ')}
-        </div>
-        <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#94a3b8' }}>
-          {workflow.steps?.length || 0} steps
-        </p>
-      </div>
-    </div>
-  </div>
-);
-
-const ActionButton = ({ title, description, icon, onClick, color }) => (
-  <button
-    onClick={onClick}
-    style={{
-      padding: '20px',
-      borderRadius: '12px',
-      border: '2px solid #e2e8f0',
-      backgroundColor: 'white',
-      cursor: 'pointer',
-      textAlign: 'left',
-      transition: 'all 0.2s'
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.borderColor = color;
-      e.currentTarget.style.boxShadow = `0 4px 12px ${color}30`;
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.borderColor = '#e2e8f0';
-      e.currentTarget.style.boxShadow = 'none';
-    }}
-  >
-    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-      <div style={{ color: color }}>{icon}</div>
-      <span style={{ fontWeight: '600', color: '#0f172a', fontSize: '15px' }}>{title}</span>
-    </div>
-    <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>{description}</p>
-  </button>
-);
 
 export default Orchestration;

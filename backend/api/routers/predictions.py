@@ -287,7 +287,7 @@ async def train_demand_model() -> Dict[str, Any]:
     Train the demand forecasting model.
 
     This endpoint triggers the model training pipeline.
-    Use with caution in production.
+    Uses Random Forest as the underlying model.
 
     Returns:
         Training results

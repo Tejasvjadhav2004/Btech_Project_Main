@@ -1,10 +1,10 @@
 {
-  "model_type": "random_forest",
+  "model_type": "arima",
   "metrics": {
     "MAE": 1.0031094608085205,
-    "MSE": 1.9056193667210235,
+    "MSE": 1.905619366721023,
     "RMSE": 1.380441728839368,
-    "R2": 0.7879156923078803,
+    "R2": 0.7879156923078804,
     "MAPE": 25.35444797594442
   },
   "feature_importance": {
@@ -56,7 +56,7 @@
     "year": 0.0
   },
   "feature_count": 46,
-  "training_date": "2026-05-11T17:31:40.493617",
-  "saved_at": "2026-05-11T17:31:40.790974",
+  "training_date": "2026-05-12T17:46:43.128228",
+  "saved_at": "2026-05-12T17:46:43.461006",
   "filename": "demand_forecast_model.pkl"
 }

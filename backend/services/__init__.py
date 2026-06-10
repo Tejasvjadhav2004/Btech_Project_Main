@@ -5,10 +5,14 @@ from services.signal_service import SignalService, signal_service
 from services.sensing_service import SensingService, sensing_service
 from services.decision_service import DecisionService, decision_service
 from services.scheduler_service import SchedulerService, scheduler_service
+from services.demo_simulation_service import DemoSimulationService, demo_simulation_service
+from services.demo_metrics_service import DemoMetricsService, demo_metrics_service
 
 __all__ = [
     'SignalService', 'signal_service',
     'SensingService', 'sensing_service',
     'DecisionService', 'decision_service',
-    'SchedulerService', 'scheduler_service'
+    'SchedulerService', 'scheduler_service',
+    'DemoSimulationService', 'demo_simulation_service',
+    'DemoMetricsService', 'demo_metrics_service'
 ]

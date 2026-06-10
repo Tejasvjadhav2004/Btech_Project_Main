@@ -1,155 +1,107 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { getAvailableRoles } from '../services/api';
-import { BarChart3, Package, Store, Truck, Settings, User, Check } from 'lucide-react';
+import { BarChart3, Package, Store, Truck, Settings, User, Check, X } from 'lucide-react';
 
 const RoleSelector = ({ onRoleSelect, onCancel, currentRole }) => {
-  console.log('RoleSelector component mounted, currentRole:', currentRole);
-  const [selectedRole, setSelectedRole] = useState(currentRole || '');
   const roles = getAvailableRoles();
-
-  const handleRoleSelect = (roleId) => {
-    console.log('Role selected in modal:', roleId);
-    setSelectedRole(roleId);
-    console.log('Selected role updated to:', roleId);
-  };
-
-  const handleConfirm = () => {
-    console.log('Confirming role selection:', selectedRole);
-    if (selectedRole) {
-      onRoleSelect(selectedRole);
-    }
-  };
 
   const getRoleColor = (roleId) => {
     const colors = {
-      'BUSINESS': '#3b82f6',
-      'WAREHOUSE_MANAGER': '#f59e0b',
-      'STORE_MANAGER': '#10b981',
-      'LOGISTICS_MANAGER': '#8b5cf6',
-      'ADMIN': '#ef4444'
+      'BUSINESS': { text: 'text-accent-blue', bg: 'bg-accent-blue', border: 'border-accent-blue' },
+      'WAREHOUSE_MANAGER': { text: 'text-severity-high', bg: 'bg-severity-high', border: 'border-severity-high' },
+      'STORE_MANAGER': { text: 'text-severity-healthy', bg: 'bg-severity-healthy', border: 'border-severity-healthy' },
+      'LOGISTICS_MANAGER': { text: 'text-accent-purple', bg: 'bg-accent-purple', border: 'border-accent-purple' },
+      'ADMIN': { text: 'text-severity-critical', bg: 'bg-severity-critical', border: 'border-severity-critical' },
     };
-    return colors[roleId] || '#3b82f6';
+    return colors[roleId] || colors.BUSINESS;
+  };
+
+  const getRoleIcon = (roleId) => {
+    const iconMap = {
+      'BUSINESS': BarChart3,
+      'WAREHOUSE_MANAGER': Package,
+      'STORE_MANAGER': Store,
+      'LOGISTICS_MANAGER': Truck,
+      'ADMIN': Settings,
+    };
+    return iconMap[roleId] || User;
   };
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 1000
-    }}>
-      <div style={{
-        backgroundColor: 'white',
-        padding: '30px',
-        borderRadius: '10px',
-        width: '450px',
-        maxWidth: '90vw',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)'
-      }}>
-        <h2 style={{ marginTop: 0, color: '#333', textAlign: 'center' }}>Switch Role</h2>
-        <p style={{ textAlign: 'center', color: '#666', marginBottom: '20px' }}>
-          Select a role to see its specialized dashboard
-        </p>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center"
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onCancel} />
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '20px' }}>
-          {roles.map((role) => (
-            <div
-              key={role.id}
-              style={{
-                padding: '15px',
-                border: `2px solid ${selectedRole === role.id ? getRoleColor(role.id) : '#e5e7eb'}`,
-                borderRadius: '8px',
-                cursor: 'pointer',
-                backgroundColor: selectedRole === role.id ? `${getRoleColor(role.id)}10` : 'white',
-                transition: 'all 0.2s',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                position: 'relative'
-              }}
-              onClick={() => handleRoleSelect(role.id)}
-            >
-              {selectedRole === role.id && (
-                <div style={{
-                  position: 'absolute',
-                  top: '8px',
-                  right: '8px',
-                  backgroundColor: getRoleColor(role.id),
-                  borderRadius: '50%',
-                  width: '20px',
-                  height: '20px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <Check size={14} color="white" strokeWidth={3} />
-                </div>
-              )}
-              <div style={{ fontSize: '24px', marginBottom: '8px', color: getRoleColor(role.id) }}>
-                {getRoleIcon(role.id)}
-              </div>
-              <h4 style={{ margin: '0 0 5px 0', fontSize: '14px', color: selectedRole === role.id ? getRoleColor(role.id) : '#333' }}>
-                {role.name}
-              </h4>
-              <p style={{ margin: 0, fontSize: '11px', color: '#666', textAlign: 'center' }}>{role.description}</p>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+      {/* Modal */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        transition={{ duration: 0.3 }}
+        className="relative glass rounded-2xl p-6 w-[480px] max-w-[90vw] border border-glass-border"
+        style={{ background: 'rgba(15, 22, 41, 0.95)', backdropFilter: 'blur(24px)' }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h2 className="text-lg font-bold text-text-primary">Switch Role</h2>
+            <p className="text-xs text-text-muted mt-0.5">Select a role to see its specialized view</p>
+          </div>
           <button
             onClick={onCancel}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: '#f3f4f6',
-              color: '#374151',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '500'
-            }}
+            className="p-2 rounded-lg hover:bg-glass-bg transition-colors text-text-muted hover:text-text-secondary"
           >
-            Cancel
-          </button>
-          <button
-            onClick={handleConfirm}
-            disabled={!selectedRole || selectedRole === currentRole}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: selectedRole && selectedRole !== currentRole ? '#3b82f6' : '#e5e7eb',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: selectedRole && selectedRole !== currentRole ? 'pointer' : 'not-allowed',
-              fontSize: '14px',
-              fontWeight: '500'
-            }}
-          >
-            {selectedRole === currentRole ? 'Already Selected' : 'Switch Role'}
+            <X size={18} />
           </button>
         </div>
-      </div>
-    </div>
+
+        {/* Role Grid */}
+        <div className="grid grid-cols-2 gap-3 mb-5">
+          {roles.map((role) => {
+            const colors = getRoleColor(role.id);
+            const Icon = getRoleIcon(role.id);
+            const isSelected = currentRole === role.id;
+
+            return (
+              <motion.button
+                key={role.id}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => onRoleSelect(role.id)}
+                className={`relative flex flex-col items-center gap-2 p-4 rounded-xl border transition-all duration-200
+                  ${isSelected
+                    ? `${colors.border}/40 ${colors.bg}/10 border-2`
+                    : 'border-glass-border hover:border-glass-hover bg-glass-bg hover:bg-glass-hover'
+                  }
+                `}
+              >
+                {isSelected && (
+                  <div className={`absolute top-2 right-2 w-5 h-5 rounded-full ${colors.bg} flex items-center justify-center`}>
+                    <Check size={12} className="text-white" strokeWidth={3} />
+                  </div>
+                )}
+                <div className={`${colors.text} opacity-80`}>
+                  <Icon size={24} strokeWidth={1.6} />
+                </div>
+                <span className={`text-sm font-medium ${isSelected ? colors.text : 'text-text-primary'}`}>
+                  {role.name}
+                </span>
+                <span className="text-[10px] text-text-dim text-center leading-tight">
+                  {role.description}
+                </span>
+              </motion.button>
+            );
+          })}
+        </div>
+      </motion.div>
+    </motion.div>
   );
 };
-
-function getRoleIcon(roleId) {
-  const iconProps = { size: 28, strokeWidth: 1.6, color: '#3b82f6' };
-  const icons = {
-    'BUSINESS': <BarChart3 {...iconProps} />,
-    'WAREHOUSE_MANAGER': <Package {...iconProps} />,
-    'STORE_MANAGER': <Store {...iconProps} />,
-    'LOGISTICS_MANAGER': <Truck {...iconProps} />,
-    'ADMIN': <Settings {...iconProps} />,
-  };
-  return icons[roleId] || <User {...iconProps} />;
-}
 
 export default RoleSelector;

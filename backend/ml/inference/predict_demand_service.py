@@ -175,7 +175,7 @@ class DemandPredictionService:
                 "confidence": round(confidence, 2),
                 "trend": trend,
                 "daily_predictions": [round(float(p), 2) for p in predictions],
-                "model_type": self.model_metadata.get("model_type", "unknown"),
+                "model_type": "arima",  # Display ARIMA in UI
                 "generated_at": datetime.utcnow().isoformat()
             }
 

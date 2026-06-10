@@ -1,381 +1,123 @@
 import React, { useEffect, useState } from 'react';
-import {
-  getSignalStats,
-  getSchedulerStatus,
-  getActiveSignals,
-  runDetection,
-  runAllDetections,
-  startScheduler,
-  stopScheduler,
-  acknowledgeSignal,
-  resolveSignal,
-  verifySignal,
-  getReplenishmentOrders,
-  approveReplenishmentOrder
-} from '../services/api';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { motion } from 'framer-motion';
+import { Zap, Play, Square, Radar, Radio, Shield, RefreshCw, AlertTriangle, CheckCircle, Sparkles } from 'lucide-react';
+import GlassCard from '../components/ui/GlassCard';
+import StatusBadge from '../components/ui/StatusBadge';
+import LoadingSkeleton from '../components/ui/LoadingSkeleton';
+import AnimatedCounter from '../components/ui/AnimatedCounter';
+import { getSignalStats, getActiveSignals, getSchedulerStatus, runAllDetections, startScheduler, stopScheduler, runDetection, acknowledgeSignal, resolveSignal, generateDemoSignals } from '../services/api';
 
 const Intelligence = () => {
   const [stats, setStats] = useState(null);
+  const [signals, setSignals] = useState([]);
   const [scheduler, setScheduler] = useState(null);
-  const [activeSignals, setActiveSignals] = useState([]);
-  const [replenishmentOrders, setReplenishmentOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [running, setRunning] = useState(false);
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const [statsData, schedulerData, signalsData, replenishmentData] = await Promise.all([
-        getSignalStats(),
-        getSchedulerStatus(),
-        getActiveSignals(),
-        getReplenishmentOrders().catch(() => ({ orders: [] })) // Handle replenishment orders gracefully
-      ]);
-      setStats(statsData);
-      setScheduler(schedulerData);
-      setActiveSignals(signalsData?.signals || []);
-      setReplenishmentOrders(replenishmentData?.orders || []);
-    } catch (e) {
-      console.error("Error fetching intelligence data:", e);
-      // Set fallback data to prevent empty displays
-      setStats(statsData || { active_signals: 0, total_signals: 0 });
-      setScheduler(schedulerData || { is_running: false, job_count: 0 });
-      setActiveSignals([]);
-      setReplenishmentOrders([]);
-    }
-    setLoading(false);
+  const loadData = async () => {
+    try { const [s, sig, sch] = await Promise.all([getSignalStats(), getActiveSignals(), getSchedulerStatus()]); setStats(s); setSignals(sig?.signals || []); setScheduler(sch); } catch (e) {} finally { setLoading(false); }
   };
+  useEffect(() => { loadData(); const iv = setInterval(loadData, 30000); return () => clearInterval(iv); }, []);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const handleRunAll = async () => { setRunning(true); try { await runAllDetections(); await loadData(); } catch (e) {} finally { setRunning(false); } };
+  const handleStartSch = async () => { try { await startScheduler(); await loadData(); } catch (e) {} };
+  const handleStopSch = async () => { try { await stopScheduler(); await loadData(); } catch (e) {} };
+  const handleGenerateDemo = async () => { setRunning(true); try { await generateDemoSignals(25); await loadData(); } catch (e) {} finally { setRunning(false); } };
 
-  const handleDetection = async (type) => {
-    try {
-      await runDetection(type);
-      alert(`Detection ${type} triggered successfully`);
-      fetchData();
-    } catch (e) {
-      alert(`Error running detection: ${e.message}`);
-    }
-  };
-
-  const getSignalTypeLabel = (type) => {
-    const labels = {
-      'LOW_STOCK': 'Low Stock',
-      'STOCKOUT': 'Stockout',
-      'DELIVERY_DELAY': 'Delivery Delay',
-      'DEMAND_SPIKE': 'Demand Spike',
-      'DEMAND_DROP': 'Demand Drop',
-      'OVERSTOCK': 'Overstock',
-      'OVER_UTILIZATION': 'Over Utilization',
-      'UNDER_UTILIZATION': 'Under Utilization'
-    };
-    return labels[type] || type;
-  };
-
-  const handleRunAll = async () => {
-    try {
-      await runAllDetections();
-      alert('All detections triggered successfully');
-      fetchData();
-    } catch (e) {
-      alert(`Error running all detections: ${e.message}`);
-    }
-  };
-
-  const handleScheduler = async (action) => {
-    try {
-      if (action === 'start') await startScheduler();
-      else await stopScheduler();
-      fetchData();
-    } catch (e) {
-      alert(`Error ${action}ing scheduler: ${e.message}`);
-    }
-  };
-
-  const handleSignalAction = async (id, action, verify = false) => {
-    try {
-      if (action === 'ack') {
-        await acknowledgeSignal(id);
-        alert('Signal acknowledged!');
-      } else if (action === 'verify') {
-        const result = await verifySignal(id);
-        if (result.can_resolve) {
-          alert(`✓ Issue verified as fixed!\n${JSON.stringify(result.current_state, null, 2)}`);
-        } else {
-          alert(`✗ Issue not fixed yet:\n${JSON.stringify(result.current_state, null, 2)}`);
-        }
-        return; // Don't refresh, just show status
-      } else if (action === 'resolve') {
-        const result = await resolveSignal(id, verify);
-        if (result.success === false) {
-          alert(`Cannot resolve: ${result.message}\n\nVerification: ${JSON.stringify(result.verification, null, 2)}`);
-          return;
-        }
-        alert('Signal resolved!');
-      }
-      fetchData();
-    } catch (e) {
-      alert(`Error: ${e.message}`);
-    }
-  };
-
-  const handleApproveOrder = async (id) => {
-    try {
-      const result = await approveReplenishmentOrder(id);
-      if (result.success) {
-        alert(`✓ Replenishment Order Approved!\n\n${result.message}\n\nInventory Updated: ${JSON.stringify(result.inventory_updated, null, 2)}`);
-      } else {
-        alert(`Error: ${result.error}`);
-      }
-      fetchData();
-    } catch (e) {
-      alert(`Error approving order: ${e.message}`);
-    }
-  };
-
-  const severityColor = (severity) => {
-    switch(severity?.toLowerCase()) {
-      case 'critical': return '#ef4444';
-      case 'high': return '#f97316';
-      case 'medium': return '#eab308';
-      default: return '#22c55e';
-    }
-  };
-
-  // Prepare data for charts
-  const severityData = [
-    { name: 'Critical', value: activeSignals.filter(s => s.severity === 'critical').length, color: '#ef4444' },
-    { name: 'High', value: activeSignals.filter(s => s.severity === 'high').length, color: '#f97316' },
-    { name: 'Medium', value: activeSignals.filter(s => s.severity === 'medium').length, color: '#eab308' },
-    { name: 'Low', value: activeSignals.filter(s => s.severity === 'low').length, color: '#22c55e' }
-  ].filter(d => d.value > 0);
-
-  const signalTypeData = [
-    { name: 'Low Stock', value: activeSignals.filter(s => s.type === 'LOW_STOCK').length },
-    { name: 'Stockout', value: activeSignals.filter(s => s.type === 'STOCKOUT').length },
-    { name: 'Delivery Delay', value: activeSignals.filter(s => s.type === 'DELIVERY_DELAY').length },
-    { name: 'Demand Spike', value: activeSignals.filter(s => s.type === 'DEMAND_SPIKE').length },
-    { name: 'Demand Drop', value: activeSignals.filter(s => s.type === 'DEMAND_DROP').length },
-    { name: 'Overstock', value: activeSignals.filter(s => s.type === 'OVERSTOCK').length },
-    { name: 'Over Utilization', value: activeSignals.filter(s => s.type === 'OVER_UTILIZATION').length },
-    { name: 'Under Utilization', value: activeSignals.filter(s => s.type === 'UNDER_UTILIZATION').length }
-  ].filter(d => d.value > 0);
+  if (loading) return <div className="space-y-4"><LoadingSkeleton variant="kpi" count={4} /><LoadingSkeleton variant="card" count={3} /></div>;
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1 style={{ color: '#0f172a', margin: 0 }}>Intelligence Panel</h1>
-        <button onClick={fetchData} style={{ padding: '8px 16px', backgroundColor: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '5px', cursor: 'pointer' }}>
-          🔄 Refresh
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-text-primary flex items-center gap-2"><Zap size={24} className="text-severity-high" /> Signal Intelligence</h1>
+          <p className="text-sm text-text-muted mt-1">AI-powered anomaly detection and signal processing</p>
+        </div>
+        <button onClick={handleRunAll} disabled={running}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent-blue/15 border border-accent-blue/25 text-accent-blue text-sm font-medium hover:bg-accent-blue/25 transition-all disabled:opacity-50">
+          <Radar size={16} className={running ? 'animate-spin' : ''} />{running ? 'Running...' : 'Run All Detections'}
+        </button>
+        <button onClick={handleGenerateDemo} disabled={running}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent-purple/15 border border-accent-purple/25 text-accent-purple text-sm font-medium hover:bg-accent-purple/25 transition-all disabled:opacity-50">
+          <Sparkles size={16} />Generate Demo Data
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '30px' }}>
-        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-          <h3 style={{ margin: 0, fontSize: '14px', color: '#64748b' }}>Active Signals</h3>
-          <p style={{ margin: '10px 0 0 0', fontSize: '24px', fontWeight: 'bold' }}>{stats?.active_signals || 0}</p>
-        </div>
-        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-          <h3 style={{ margin: 0, fontSize: '14px', color: '#64748b' }}>Total Signals</h3>
-          <p style={{ margin: '10px 0 0 0', fontSize: '24px', fontWeight: 'bold' }}>{stats?.total_signals || 0}</p>
-        </div>
-        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-          <h3 style={{ margin: 0, fontSize: '14px', color: '#64748b' }}>Scheduler Status</h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
-            <span style={{ fontSize: '18px', fontWeight: 'bold', color: scheduler?.is_running ? '#22c55e' : '#ef4444' }}>
-              {scheduler?.is_running ? '🟢 Running' : '🔴 Stopped'}
-            </span>
-            {scheduler?.is_running ? (
-              <button onClick={() => handleScheduler('stop')} style={{ padding: '4px 8px', fontSize: '12px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer' }}>Stop</button>
-            ) : (
-              <button onClick={() => handleScheduler('start')} style={{ padding: '4px 8px', fontSize: '12px', background: '#22c55e', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer' }}>Start</button>
-            )}
-          </div>
-        </div>
-        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-          <h3 style={{ margin: 0, fontSize: '14px', color: '#64748b' }}>Scheduler Jobs</h3>
-          <p style={{ margin: '10px 0 0 0', fontSize: '24px', fontWeight: 'bold' }}>{scheduler?.job_count || 0}</p>
-        </div>
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { label: 'Total Signals', value: stats?.total_signals || 0, color: 'text-accent-blue' },
+          { label: 'Active', value: signals.length, color: 'text-severity-high' },
+          { label: 'Resolved', value: stats?.resolved_count || 0, color: 'text-severity-healthy' },
+          { label: 'Detection Rate', value: stats?.detection_rate || 0, color: 'text-accent-purple', suffix: '%' },
+        ].map((s, i) => (
+          <GlassCard key={i} delay={i * 0.05}>
+            <p className="text-[10px] uppercase tracking-wider text-text-muted font-semibold">{s.label}</p>
+            <p className={`text-2xl font-bold mt-1 ${s.color}`}><AnimatedCounter value={s.value} decimals={s.suffix ? 1 : 0} suffix={s.suffix || ''} /></p>
+          </GlassCard>
+        ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px' }}>
-        <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-          <h3 style={{ marginTop: 0, color: '#334155' }}>Signal Analytics</h3>
-          
-          {activeSignals.length > 0 && (
-            <>
-              <div style={{ marginBottom: '30px' }}>
-                <h4 style={{ color: '#64748b', marginBottom: '15px' }}>Signals by Severity</h4>
-                <ResponsiveContainer width="100%" height={200}>
-                  <PieChart>
-                    <Pie
-                      data={severityData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {severityData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-
-              <div style={{ marginBottom: '30px' }}>
-                <h4 style={{ color: '#64748b', marginBottom: '15px' }}>Signals by Type</h4>
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={signalTypeData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="value" fill="#3b82f6" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </>
-          )}
-
-          <h3 style={{ marginTop: 0, color: '#334155', marginBottom: '15px' }}>Active Signals</h3>
-          {activeSignals.length === 0 ? (
-            <p style={{ color: '#64748b' }}>No active signals detected.</p>
-          ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {activeSignals.map(sig => (
-                  <div key={sig.signal_id} style={{ borderLeft: `4px solid ${severityColor(sig.severity)}`, padding: '15px', backgroundColor: '#f8fafc', borderRadius: '4px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                      <div>
-                        <strong style={{ fontSize: '16px' }}>{getSignalTypeLabel(sig.type)}</strong>
-                        <span style={{ marginLeft: '10px', fontSize: '12px', padding: '2px 6px', background: severityColor(sig.severity), color: 'white', borderRadius: '10px' }}>{sig.severity}</span>
-                      </div>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <button onClick={() => handleSignalAction(sig.signal_id, 'verify')} style={{ padding: '4px 10px', background: '#64748b', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>🔍 Verify</button>
-                        <button onClick={() => handleSignalAction(sig.signal_id, 'ack')} style={{ padding: '4px 10px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Acknowledge</button>
-                        <button onClick={() => handleSignalAction(sig.signal_id, 'resolve', true)} style={{ padding: '4px 10px', background: '#22c55e', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Resolve</button>
-                      </div>
-                    </div>
-                    <p style={{ margin: 0, fontSize: '14px', color: '#475569' }}>{sig.message}</p>
-                    {sig.entity_id && <p style={{ margin: '5px 0 0', fontSize: '12px', color: '#94a3b8' }}>Entity: {sig.entity_id}</p>}
-                    {sig.details?.sku && <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#94a3b8' }}>SKU: {sig.details.sku}</p>}
-                    {sig.details?.current_stock !== undefined && (
-                      <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#94a3b8' }}>
-                        Stock: {sig.details.current_stock} (Threshold: {sig.details.threshold || 20})
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-          )}
+      {/* Scheduler */}
+      <GlassCard padding="p-4" hover={false}>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-text-primary flex items-center gap-2"><Radio size={16} className="text-accent-cyan" /> Scheduler</h3>
+          <StatusBadge type={scheduler?.status === 'running' ? 'running' : 'stopped'} pulse={scheduler?.status === 'running'} size="sm" />
         </div>
+        <div className="flex gap-2">
+          <button onClick={handleStartSch} disabled={scheduler?.status === 'running'} className="px-3 py-1.5 rounded-lg text-xs font-medium text-severity-healthy border border-severity-healthy/20 hover:bg-severity-healthy/10 transition-colors disabled:opacity-30"><Play size={12} className="inline mr-1" />Start</button>
+          <button onClick={handleStopSch} disabled={scheduler?.status !== 'running'} className="px-3 py-1.5 rounded-lg text-xs font-medium text-severity-critical border border-severity-critical/20 hover:bg-severity-critical/10 transition-colors disabled:opacity-30"><Square size={12} className="inline mr-1" />Stop</button>
+        </div>
+      </GlassCard>
 
-        <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-          <h3 style={{ marginTop: 0, color: '#334155' }}>Manual Controls</h3>
-          <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '20px' }}>Trigger manual detections to sync intelligence data.</p>
-          
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <button onClick={() => handleDetection('low-stock')} style={controlBtnStyle}>🔍 Detect Low Stock</button>
-            <button onClick={() => handleDetection('stockout')} style={controlBtnStyle}>🚨 Detect Stockout</button>
-            <button onClick={() => handleDetection('delivery-delay')} style={controlBtnStyle}>🚚 Detect Delivery Delays</button>
-            <button onClick={() => handleDetection('demand-spike')} style={controlBtnStyle}>📈 Detect Demand Spike</button>
-            <button onClick={() => handleDetection('utilization')} style={controlBtnStyle}>🏭 Detect Utilization</button>
-            <hr style={{ width: '100%', borderColor: '#f1f5f9' }} />
-            <button onClick={handleRunAll} style={{ ...controlBtnStyle, background: '#0f172a', color: 'white', border: 'none' }}>🔄 Run All Detections</button>
-          </div>
-          
-          <h3 style={{ marginTop: '30px', color: '#334155' }}>Pending Replenishment Orders</h3>
-          {replenishmentOrders.length === 0 ? (
-            <p style={{ color: '#64748b', fontSize: '14px' }}>No pending orders.</p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {replenishmentOrders.map(order => (
-                <div key={order.order_id} style={{ padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <div>
-                      <strong style={{ fontSize: '14px' }}>{order.order_id}</strong>
-                      <span style={{
-                        marginLeft: '8px',
-                        padding: '2px 6px',
-                        background: order.priority === 'high' ? '#fee2e2' : '#e0e7ff',
-                        color: order.priority === 'high' ? '#dc2626' : '#4f46e5',
-                        borderRadius: '10px',
-                        fontSize: '10px'
-                      }}>
-                        {order.priority?.toUpperCase() || 'NORMAL'}
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => handleApproveOrder(order.order_id)}
-                      style={{
-                        padding: '4px 12px',
-                        background: '#22c55e',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '12px',
-                        fontWeight: 'bold'
-                      }}
-                    >
-                      ✓ Approve
-                    </button>
-                  </div>
-                  <p style={{ margin: 0, fontSize: '12px', color: '#475569' }}>
-                    📦 SKU: {order.items?.[0]?.sku || 'N/A'} × {order.items?.[0]?.quantity || 0} units
-                  </p>
-                  <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#64748b' }}>
-                    🏭 Warehouse: {order.warehouse_id}
-                  </p>
-                  {order.total_amount > 0 && (
-                    <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#059669' }}>
-                      💰 Total: ${order.total_amount?.toFixed(2) || '0.00'}
-                    </p>
-                  )}
-                  {order.calculation_details && (
-                    <div style={{ marginTop: '6px', padding: '6px', background: '#f1f5f9', borderRadius: '4px', fontSize: '11px' }}>
-                      <span style={{ color: '#64748b' }}>Current: {order.calculation_details.current_stock}</span>
-                      <span style={{ margin: '0 8px', color: '#cbd5e1' }}>|</span>
-                      <span style={{ color: '#64748b' }}>Threshold: {order.calculation_details.reorder_threshold}</span>
-                      <span style={{ margin: '0 8px', color: '#cbd5e1' }}>|</span>
-                      <span style={{ color: '#059669' }}>Reorder Qty: {order.calculation_details.reorder_quantity_used}</span>
-                    </div>
-                  )}
-                  {order.triggered_by_signal && (
-                    <p style={{ margin: '4px 0 0', fontSize: '11px', color: '#94a3b8' }}>
-                      Triggered by: {order.triggered_by_signal}
-                    </p>
-                  )}
-                  <p style={{ margin: '4px 0 0', fontSize: '10px', color: '#94a3b8' }}>
-                    Created: {order.created_at ? new Date(order.created_at).toLocaleString() : 'N/A'}
-                  </p>
+      {/* Signal Distribution */}
+      {stats?.by_type && (
+        <GlassCard padding="p-4" hover={false}>
+          <h3 className="text-sm font-semibold text-text-primary mb-3">Signal Distribution</h3>
+          <div className="space-y-2">
+            {Object.entries(stats.by_type).map(([type, count]) => (
+              <div key={type} className="flex items-center gap-3">
+                <span className="text-xs text-text-muted w-32 truncate">{type.replace(/_/g, ' ')}</span>
+                <div className="flex-1 h-2 rounded-full bg-bg-primary overflow-hidden">
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min((count / (stats.total_signals || 1)) * 100, 100)}%` }} transition={{ duration: 0.8 }}
+                    className="h-full rounded-full bg-accent-blue" />
                 </div>
-              ))}
-            </div>
-          )}
+                <span className="text-xs text-text-primary font-mono w-8 text-right">{count}</span>
+              </div>
+            ))}
+          </div>
+        </GlassCard>
+      )}
+
+      {/* Active Signals */}
+      {signals.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold text-text-primary mb-3 flex items-center gap-2"><AlertTriangle size={16} className="text-severity-high" /> Active Signals ({signals.length})</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {signals.map((sig, i) => (
+              <motion.div key={sig.signal_id || i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+                <GlassCard padding="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <StatusBadge type={sig.type?.toLowerCase() || 'info'} pulse size="xs" />
+                    <StatusBadge type={sig.severity?.toLowerCase() || 'medium'} size="xs" />
+                  </div>
+                  <p className="text-sm text-text-primary mb-2">{sig.message}</p>
+                  <div className="text-[10px] text-text-dim space-y-0.5">
+                    <p>Entity: {sig.entity_id} | Product: {sig.product_id || 'N/A'}</p>
+                    <p className="font-mono">{sig.created_at ? new Date(sig.created_at).toLocaleString() : ''}</p>
+                  </div>
+                  <div className="flex gap-1.5 mt-3">
+                    <button onClick={() => acknowledgeSignal(sig.signal_id).then(loadData)} className="px-2 py-1 rounded text-[10px] font-medium text-accent-blue hover:bg-accent-blue/10 border border-accent-blue/20">Acknowledge</button>
+                    <button onClick={() => resolveSignal(sig.signal_id).then(loadData)} className="px-2 py-1 rounded text-[10px] font-medium text-severity-healthy hover:bg-severity-healthy/10 border border-severity-healthy/20">Resolve</button>
+                  </div>
+                </GlassCard>
+              </motion.div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
-};
-
-const controlBtnStyle = {
-  padding: '12px',
-  textAlign: 'left',
-  background: '#f8fafc',
-  border: '1px solid #e2e8f0',
-  borderRadius: '6px',
-  cursor: 'pointer',
-  fontWeight: '500',
-  color: '#334155',
-  transition: 'background 0.2s'
 };
 
 export default Intelligence;

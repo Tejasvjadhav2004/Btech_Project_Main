@@ -1,106 +1,47 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { setCurrentRole, getAvailableRoles } from '../services/api';
-import { BarChart3, Package, Store, Truck, Settings, User, Check } from 'lucide-react';
-import './Login.css';
+import { motion } from 'framer-motion';
+import { Brain, LogIn, User, Lock } from 'lucide-react';
 
-function Login() {
-  const navigate = useNavigate();
-  const [selectedRole, setSelectedRole] = useState('');
-  const [loading, setLoading] = useState(false);
+const Login = ({ onLogin }) => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
-  const roles = getAvailableRoles();
-
-  const handleRoleSelect = (roleId) => {
-    setSelectedRole(roleId);
-  };
-
-  const handleLogin = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('=== LOGIN FLOW DEBUG ===');
-    console.log('1. handleLogin called');
-    console.log('2. selectedRole:', selectedRole);
-    
-    if (!selectedRole) {
-      alert('Please select a role');
-      return;
-    }
-
-    setLoading(true);
-    console.log('3. Setting loading to true');
-    
-    // Simulate a brief delay for better UX
-    setTimeout(() => {
-      console.log('4. Inside setTimeout - about to call setCurrentRole');
-      setCurrentRole(selectedRole);
-      console.log('5. setCurrentRole called with:', selectedRole);
-      setLoading(false);
-      // Note: We don't need navigate() anymore since App.jsx listens for role changes
-      console.log('6. Login complete - state change will trigger navigation');
-    }, 500);
+    if (onLogin) onLogin({ username, password });
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <div className="login-header">
-          <h1>Supply Chain Management System</h1>
-          <h2>Select Your Role</h2>
-          <p className="login-subtitle">Choose your stakeholder role to access the dashboard</p>
-        </div>
-
-        <form className="login-form" onSubmit={handleLogin}>
-          <div className="roles-grid">
-            {roles.map((role) => (
-              <div
-                key={role.id}
-                className={`role-card ${selectedRole === role.id ? 'selected' : ''}`}
-                onClick={() => handleRoleSelect(role.id)}
-              >
-                <div className="role-icon">
-                  {getRoleIcon(role.id)}
-                </div>
-                <h3>{role.name}</h3>
-                <p>{role.description}</p>
-                {selectedRole === role.id && (
-                  <div className="role-selected-badge">
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Check size={14} /> Selected</span>
-                  </div>
-                )}
-              </div>
-            ))}
+    <div className="min-h-screen bg-bg-primary flex items-center justify-center relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-accent-blue/5 via-transparent to-accent-purple/5" />
+      <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
+        className="relative glass rounded-2xl p-8 w-[400px] max-w-[90vw]">
+        <div className="flex flex-col items-center mb-8">
+          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center mb-4">
+            <Brain size={28} className="text-white" />
           </div>
-
-          <button 
-            type="submit" 
-            className="login-button" 
-            disabled={!selectedRole || loading}
-          >
-            {loading ? 'Loading...' : 'Access Dashboard'}
+          <h1 className="text-xl font-bold text-text-primary">SupplyChain AI</h1>
+          <p className="text-xs text-text-muted mt-1">Autonomous Command Center</p>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="relative">
+            <User size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+            <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 rounded-lg bg-bg-card border border-glass-border text-sm text-text-primary placeholder:text-text-dim focus:outline-none focus:border-accent-blue/40" />
+          </div>
+          <div className="relative">
+            <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+            <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 rounded-lg bg-bg-card border border-glass-border text-sm text-text-primary placeholder:text-text-dim focus:outline-none focus:border-accent-blue/40" />
+          </div>
+          <button type="submit"
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-gradient-to-r from-accent-blue to-accent-purple text-white font-semibold text-sm hover:opacity-90 transition-opacity">
+            <LogIn size={16} /> Sign In
           </button>
         </form>
-
-        <div className="login-footer">
-          <p>
-            <strong>Note:</strong> This is a simplified authentication system for demonstration purposes. 
-            No password is required - simply select your role to access the system.
-          </p>
-        </div>
-      </div>
+      </motion.div>
     </div>
   );
-}
-
-function getRoleIcon(roleId) {
-  const iconProps = { size: 32, strokeWidth: 1.6, color: '#3b82f6' };
-  const icons = {
-    'BUSINESS': <BarChart3 {...iconProps} />,
-    'WAREHOUSE_MANAGER': <Package {...iconProps} />,
-    'STORE_MANAGER': <Store {...iconProps} />,
-    'LOGISTICS_MANAGER': <Truck {...iconProps} />,
-    'ADMIN': <Settings {...iconProps} />,
-  };
-  return icons[roleId] || <User {...iconProps} />;
-}
+};
 
 export default Login;

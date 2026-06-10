@@ -577,51 +577,145 @@ class SignalService:
                 }
             }
         ]
-        
+
         result = list(self.db[self.COLLECTION_NAME].aggregate(pipeline))
-        
+
         if not result:
             return {
                 "total_signals": 0,
                 "active_signals": 0,
-                "resolved_signals": 0,
+                "resolved_count": 0,
+                "detection_rate": 0,
                 "by_type": {},
                 "by_severity": {},
                 "by_entity_type": {},
                 "recent_24h": 0
             }
-        
+
         data = result[0]
-        
+
+        total_signals = data["total"][0]["count"] if data["total"] else 0
+        active_signals = 0
+        resolved_count = 0
+
+        for item in data["by_status"]:
+            if item["_id"] == SignalStatus.ACTIVE:
+                active_signals = item["count"]
+            elif item["_id"] == SignalStatus.RESOLVED:
+                resolved_count = item["count"]
+
+        # Calculate detection rate (resolved + acknowledged / total)
+        acknowledged_count = 0
+        for item in data["by_status"]:
+            if item["_id"] == SignalStatus.ACKNOWLEDGED:
+                acknowledged_count = item["count"]
+
+        detection_rate = 0
+        if total_signals > 0:
+            detection_rate = round(((resolved_count + acknowledged_count) / total_signals) * 100, 1)
+
         stats = {
-            "total_signals": data["total"][0]["count"] if data["total"] else 0,
-            "active_signals": 0,
-            "resolved_signals": 0,
+            "total_signals": total_signals,
+            "active_signals": active_signals,
+            "resolved_count": resolved_count,
+            "detection_rate": detection_rate,
             "by_status": {},
             "by_type": {},
             "by_severity": {},
             "by_entity_type": {},
             "recent_24h": data["recent_24h"][0]["count"] if data["recent_24h"] else 0
         }
-        
+
         for item in data["by_status"]:
             stats["by_status"][item["_id"]] = item["count"]
-            if item["_id"] == SignalStatus.ACTIVE:
-                stats["active_signals"] = item["count"]
-            elif item["_id"] == SignalStatus.RESOLVED:
-                stats["resolved_signals"] = item["count"]
-        
+
         for item in data["by_type"]:
             stats["by_type"][item["_id"]] = item["count"]
-        
+
         for item in data["by_severity"]:
             stats["by_severity"][item["_id"]] = item["count"]
-        
+
         for item in data["by_entity_type"]:
             stats["by_entity_type"][item["_id"]] = item["count"]
-        
+
         return stats
-    
+
+    def generate_demo_signals(self, count: int = 20) -> Dict[str, Any]:
+        """
+        Generate demo signals for testing/preview purposes.
+
+        Args:
+            count: Number of signals to generate
+
+        Returns:
+            Summary of generated signals
+        """
+        import random
+
+        signal_types = [
+            SignalType.LOW_STOCK,
+            SignalType.STOCKOUT,
+            SignalType.DELIVERY_DELAY,
+            SignalType.OVER_UTILIZATION,
+            SignalType.DEMAND_SPIKE,
+            SignalType.PREDICTED_STOCKOUT,
+            SignalType.PREDICTED_DELAY
+        ]
+
+        severities = [SignalSeverity.LOW, SignalSeverity.MEDIUM, SignalSeverity.HIGH, SignalSeverity.CRITICAL]
+        entity_types = ["store", "warehouse", "delivery"]
+        products = ["SKU001", "SKU002", "SKU003", "SKU004", "SKU005"]
+        stores = ["ST01", "ST02", "ST03", "ST04", "ST05"]
+        warehouses = ["WH01", "WH02", "WH03"]
+
+        generated = 0
+        for i in range(count):
+            signal_type = random.choice(signal_types)
+            severity = random.choice(severities)
+            entity_type = random.choice(entity_types)
+
+            if entity_type == "store":
+                entity_id = random.choice(stores)
+                product_id = random.choice(products)
+            elif entity_type == "warehouse":
+                entity_id = random.choice(warehouses)
+                product_id = random.choice(products) if random.random() > 0.5 else None
+            else:
+                entity_id = f"DEL-{random.randint(1000, 9999)}"
+                product_id = None
+
+            # Create signal
+            try:
+                signal = self.create_signal(
+                    signal_type=signal_type,
+                    entity_type=entity_type,
+                    entity_id=entity_id,
+                    product_id=product_id,
+                    severity=severity,
+                    details={"demo": True, "generated_at": datetime.utcnow().isoformat()},
+                    source="demo_generator"
+                )
+                if signal:
+                    generated += 1
+
+                    # Randomly resolve some signals
+                    if random.random() > 0.6:
+                        self.resolve_signal(
+                            signal["signal_id"],
+                            auto_resolved=True,
+                            resolution_note="Demo: Auto-resolved"
+                        )
+            except Exception as e:
+                logger.warning(f"Error generating demo signal: {e}")
+                continue
+
+        logger.info(f"Generated {generated} demo signals")
+        return {
+            "success": True,
+            "signals_generated": generated,
+            "message": f"Generated {generated} demo signals"
+        }
+
     def _log_event(
         self,
         signal_id: Optional[str] = None,

@@ -47,8 +47,8 @@ export const getForecast = async () => {
 };
 
 export const getAlerts = async () => {
-  const response = await api.get('/api/signals/alerts?acknowledged=false&limit=50');
-  return response.data;
+  const response = await api.get('/api/signals/active?limit=50');
+  return response.data.signals || [];
 };
 
 export const fetchOrders = async (status = null) => {
@@ -184,6 +184,11 @@ export const runDetection = async (type) => {
 
 export const runAllDetections = async () => {
   const response = await api.post('/api/signals/detect/all');
+  return response.data;
+};
+
+export const generateDemoSignals = async (count = 20) => {
+  const response = await api.post(`/api/signals/demo/generate?count=${count}`);
   return response.data;
 };
 
@@ -499,6 +504,151 @@ export const getOrchestrationHealth = async () => {
   } catch (e) {
     console.error('Error checking orchestration health:', e);
     return { status: 'unhealthy', error: e.message };
+  }
+};
+
+// ============================================================
+// DEMO SIMULATION APIS
+// ============================================================
+
+export const getDemoStatus = async () => {
+  try {
+    const response = await api.get('/api/demo/status');
+    return response.data;
+  } catch (e) {
+    console.error('Error fetching demo status:', e);
+    return { simulation: { state: { is_running: false } }, metrics: {} };
+  }
+};
+
+export const startDemoSimulation = async (mode = 'ai_autonomous') => {
+  try {
+    const response = await api.post(`/api/demo/start?mode=${mode}`);
+    return response.data;
+  } catch (e) {
+    console.error('Error starting demo:', e);
+    return { success: false, error: e.message };
+  }
+};
+
+export const stopDemoSimulation = async () => {
+  try {
+    const response = await api.post('/api/demo/stop');
+    return response.data;
+  } catch (e) {
+    console.error('Error stopping demo:', e);
+    return { success: false, error: e.message };
+  }
+};
+
+export const setDemoMode = async (mode) => {
+  try {
+    const response = await api.post(`/api/demo/mode/${mode}`);
+    return response.data;
+  } catch (e) {
+    console.error('Error setting demo mode:', e);
+    return { success: false, error: e.message };
+  }
+};
+
+export const triggerDemoScenario = async (scenario, params = {}) => {
+  try {
+    const response = await api.post(`/api/demo/scenario/${scenario}`, params);
+    return response.data;
+  } catch (e) {
+    console.error('Error triggering scenario:', e);
+    return { success: false, error: e.message };
+  }
+};
+
+export const getDemoMetrics = async (mode = null) => {
+  try {
+    const url = mode ? `/api/demo/metrics?mode=${mode}` : '/api/demo/metrics';
+    const response = await api.get(url);
+    return response.data;
+  } catch (e) {
+    console.error('Error fetching demo metrics:', e);
+    return {};
+  }
+};
+
+export const getDemoMetricsComparison = async () => {
+  try {
+    const response = await api.get('/api/demo/metrics/comparison');
+    return response.data;
+  } catch (e) {
+    console.error('Error fetching metrics comparison:', e);
+    return {};
+  }
+};
+
+export const getDemoActivities = async (limit = 50) => {
+  try {
+    const response = await api.get(`/api/demo/activities?limit=${limit}`);
+    return response.data;
+  } catch (e) {
+    console.error('Error fetching demo activities:', e);
+    return { activities: [], count: 0 };
+  }
+};
+
+export const getDemoScenarios = async () => {
+  try {
+    const response = await api.get('/api/demo/scenarios');
+    return response.data;
+  } catch (e) {
+    console.error('Error fetching demo scenarios:', e);
+    return { scenarios: [] };
+  }
+};
+
+export const resetDemo = async () => {
+  try {
+    const response = await api.post('/api/demo/reset');
+    return response.data;
+  } catch (e) {
+    console.error('Error resetting demo:', e);
+    return { success: false, error: e.message };
+  }
+};
+
+export const pauseDemoSimulation = async () => {
+  try {
+    const response = await api.post('/api/demo/pause');
+    return response.data;
+  } catch (e) {
+    console.error('Error pausing demo:', e);
+    return { success: false, error: e.message };
+  }
+};
+
+export const resumeDemoSimulation = async () => {
+  try {
+    const response = await api.post('/api/demo/resume');
+    return response.data;
+  } catch (e) {
+    console.error('Error resuming demo:', e);
+    return { success: false, error: e.message };
+  }
+};
+
+export const getActivityDetail = async (activityId) => {
+  try {
+    const response = await api.get(`/api/demo/activities/${activityId}`);
+    return response.data;
+  } catch (e) {
+    console.error('Error fetching activity detail:', e);
+    return { success: false };
+  }
+};
+
+export const getActiveSignalsDetail = async () => {
+  try {
+    const response = await api.get('/api/demo/signals/active');
+    return response.data;
+  } catch (e) {
+    console.error('Error fetching signals detail:', e);
+    return { signals: [], count: 0 };
   }
 };
 

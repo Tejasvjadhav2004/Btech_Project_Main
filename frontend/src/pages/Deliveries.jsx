@@ -1,206 +1,83 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { Truck, Search, MapPin, Clock, Loader } from 'lucide-react';
+import GlassCard from '../components/ui/GlassCard';
+import StatusBadge from '../components/ui/StatusBadge';
+import LoadingSkeleton from '../components/ui/LoadingSkeleton';
 import { getDeliveries, startDelivery, completeDelivery } from '../services/api';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 const Deliveries = () => {
   const [deliveries, setDeliveries] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [limit, setLimit] = useState(50);
+  const [filter, setFilter] = useState('All');
+  const [actionLoading, setActionLoading] = useState(null);
 
-  const fetchDeliveriesList = () => {
-    setLoading(true);
-    getDeliveries(limit, statusFilter)
-      .then(res => {
-        setDeliveries(res);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
-  };
+  const loadData = async () => { try { const d = await getDeliveries(100, filter !== 'All' ? filter : null); setDeliveries(Array.isArray(d) ? d : []); } catch (e) {} finally { setLoading(false); } };
+  useEffect(() => { loadData(); }, [filter]);
 
-  useEffect(() => {
-    fetchDeliveriesList();
-  }, [limit, statusFilter]);
+  const handleAction = async (fn, id) => { setActionLoading(id); try { await fn(id); await loadData(); } catch (e) { alert(e.message); } finally { setActionLoading(null); } };
 
-  const handleAction = async (id, action) => {
-    try {
-      if (action === 'start') await startDelivery(id);
-      else if (action === 'complete') await completeDelivery(id);
-      alert(`Delivery ${action}ed successfully!`);
-      fetchDeliveriesList();
-    } catch (e) {
-      alert(`Error: ${e.message}`);
-    }
-  };
+  const statusMap = { pending: 'warning', in_transit: 'info', delivered: 'success', delayed: 'critical', cancelled: 'critical' };
+  const statuses = ['All', 'Pending', 'In_Transit', 'Delivered', 'Delayed'];
 
-  const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'in_transit': return { bg: '#e0f2fe', text: '#0284c7' };
-      case 'delivered': return { bg: '#dcfce3', text: '#166534' };
-      case 'failed': return { bg: '#fee2e2', text: '#991b1b' };
-      case 'cancelled': return { bg: '#f1f5f9', text: '#475569' };
-      default: return { bg: '#fef3c7', text: '#d97706' }; // pending
-    }
-  };
-
-  // Prepare data for charts
-  const deliveryStatusData = [
-    { name: 'Pending', value: deliveries.filter(d => d.status === 'pending').length, color: '#f59e0b' },
-    { name: 'In Transit', value: deliveries.filter(d => d.status === 'in_transit').length, color: '#3b82f6' },
-    { name: 'Delivered', value: deliveries.filter(d => d.status === 'delivered').length, color: '#22c55e' },
-    { name: 'Failed', value: deliveries.filter(d => d.status === 'failed').length, color: '#ef4444' },
-    { name: 'Cancelled', value: deliveries.filter(d => d.status === 'cancelled').length, color: '#6b7280' }
-  ].filter(d => d.value > 0);
-
-  const deliveryDistanceData = deliveries.slice(-10).map((delivery, index) => ({
-    name: `Delivery ${index + 1}`,
-    distance: delivery.distance_km || 0,
-    duration: delivery.estimated_duration_hours || 0
-  }));
+  if (loading) return <LoadingSkeleton variant="table" />;
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1 style={{ color: '#0f172a', margin: 0 }}>Deliveries</h1>
-        <button onClick={fetchDeliveriesList} style={{ padding: '8px 16px', background: 'white', border: '1px solid #cbd5e1', borderRadius: '5px', cursor: 'pointer' }}>
-          🔄 Refresh
-        </button>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-text-primary flex items-center gap-2"><Truck size={24} className="text-accent-purple" /> Delivery Tracking</h1>
+        <p className="text-sm text-text-muted mt-1">Monitor and manage all deliveries in real-time</p>
       </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
-        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-          <h3 style={{ marginTop: 0, color: '#334155', marginBottom: '15px' }}>Delivery Status Distribution</h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <PieChart>
-              <Pie
-                data={deliveryStatusData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {deliveryStatusData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-          <h3 style={{ marginTop: 0, color: '#334155', marginBottom: '15px' }}>Distance & Duration Analysis</h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <AreaChart data={deliveryDistanceData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis yAxisId="left" />
-              <YAxis yAxisId="right" orientation="right" />
-              <Tooltip />
-              <Legend />
-              <Area yAxisId="left" type="monotone" dataKey="distance" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} name="Distance (km)" />
-              <Area yAxisId="right" type="monotone" dataKey="duration" stroke="#10b981" fill="#10b981" fillOpacity={0.6} name="Duration (h)" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+      <div className="flex items-center gap-3 flex-wrap">
+        {statuses.map(s => (
+          <button key={s} onClick={() => setFilter(s)} className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${filter === s ? 'bg-accent-purple/15 text-accent-purple border border-accent-purple/25' : 'border border-glass-border text-text-muted hover:bg-glass-bg'}`}>
+            {s.replace('_', ' ')}
+          </button>
+        ))}
       </div>
-
-      <div style={{ display: 'flex', gap: '20px', marginBottom: '20px', backgroundColor: 'white', padding: '15px', borderRadius: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <label style={{ fontSize: '14px', color: '#64748b', marginBottom: '5px' }}>Filter Status</label>
-          <select 
-            value={statusFilter} 
-            onChange={(e) => setStatusFilter(e.target.value)}
-            style={{ padding: '8px', borderRadius: '5px', border: '1px solid #cbd5e1', width: '150px' }}
-          >
-            <option value="All">All</option>
-            <option value="pending">Pending</option>
-            <option value="in_transit">In Transit</option>
-            <option value="delivered">Delivered</option>
-            <option value="failed">Failed</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <label style={{ fontSize: '14px', color: '#64748b', marginBottom: '5px' }}>Limit Results</label>
-          <input 
-            type="number" 
-            value={limit} 
-            onChange={(e) => setLimit(e.target.value)} 
-            style={{ padding: '8px', borderRadius: '5px', border: '1px solid #cbd5e1', width: '100px' }}
-          />
-        </div>
-      </div>
-
-      <div style={{ backgroundColor: 'white', borderRadius: '10px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
-        {loading ? (
-          <div style={{ padding: '20px', color: '#64748b' }}>Loading deliveries...</div>
-        ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#f1f5f9', borderBottom: '1px solid #e2e8f0' }}>
-                <th style={{ padding: '15px', color: '#475569' }}>Delivery ID / Order</th>
-                <th style={{ padding: '15px', color: '#475569' }}>Route</th>
-                <th style={{ padding: '15px', color: '#475569' }}>Transport / ETA</th>
-                <th style={{ padding: '15px', color: '#475569' }}>Status</th>
-                <th style={{ padding: '15px', color: '#475569' }}>Action</th>
-              </tr>
-            </thead>
+      <GlassCard padding="p-0" hover={false}>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead><tr className="border-b border-glass-border">
+              {['Delivery ID', 'Order', 'From', 'To', 'Transport', 'Duration', 'Status', 'ETA', 'Actions'].map(h => <th key={h} className="px-4 py-3 text-left text-[10px] uppercase tracking-wider text-text-muted font-semibold">{h}</th>)}
+            </tr></thead>
             <tbody>
-              {deliveries.length === 0 ? (
-                <tr><td colSpan="5" style={{ padding: '20px', textAlign: 'center', color: '#64748b' }}>No deliveries found</td></tr>
-              ) : (
-                deliveries.map(delivery => {
-                  const colors = getStatusColor(delivery.status);
-                  return (
-                    <tr key={delivery.delivery_id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '15px' }}>
-                        <div style={{ fontWeight: 'bold', color: '#0f172a' }}>{delivery.delivery_id}</div>
-                        <div style={{ fontSize: '12px', color: '#64748b' }}>Order: {delivery.order_id}</div>
-                      </td>
-                      <td style={{ padding: '15px' }}>
-                        <div style={{ color: '#334155' }}>📍 {delivery.warehouse_id} → {delivery.store_id}</div>
-                        <div style={{ fontSize: '12px', color: '#64748b' }}>{delivery.distance_km?.toFixed(1) || 0} km</div>
-                      </td>
-                      <td style={{ padding: '15px' }}>
-                        <div style={{ color: '#334155', textTransform: 'capitalize' }}>🚛 {delivery.transport_mode || 'truck'}</div>
-                        <div style={{ fontSize: '12px', color: '#64748b' }}>ETA: {delivery.estimated_duration_hours?.toFixed(1) || 0}h</div>
-                      </td>
-                      <td style={{ padding: '15px' }}>
-                        <span style={{ 
-                          padding: '4px 10px', 
-                          borderRadius: '20px', 
-                          fontSize: '12px', 
-                          fontWeight: 'bold',
-                          backgroundColor: colors.bg, 
-                          color: colors.text,
-                          textTransform: 'uppercase'
-                        }}>
-                          {delivery.status.replace('_', ' ')}
-                        </span>
-                      </td>
-                      <td style={{ padding: '15px' }}>
-                        {delivery.status === 'pending' && (
-                          <button onClick={() => handleAction(delivery.delivery_id, 'start')} style={{ padding: '6px 12px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Start Delivery</button>
-                        )}
-                        {delivery.status === 'in_transit' && (
-                          <button onClick={() => handleAction(delivery.delivery_id, 'complete')} style={{ padding: '6px 12px', background: '#22c55e', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Complete Delivery</button>
-                        )}
-                      </td>
-                    </tr>
-                  )
-                })
-              )}
+              {deliveries.slice(0, 50).map((d, i) => {
+                const st = (d.status || 'pending').toLowerCase();
+                const fromLocation = d.route?.find(r => r.action === 'pickup')?.city || d.warehouse_id || '—';
+                const toLocation = d.route?.find(r => r.action === 'delivery')?.city || d.store_id || '—';
+                const duration = d.estimated_duration_hours ? `${d.estimated_duration_hours.toFixed(1)}h` : '—';
+                const transport = d.transport_mode || '—';
+                const eta = d.estimated_arrival ? new Date(d.estimated_arrival) : null;
+                const isDelayed = eta && eta < new Date() && st === 'in_transit';
+                return (
+                  <motion.tr key={d.delivery_id || d.id || i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.01 }}
+                    className="border-b border-glass-border/50 hover:bg-bg-card-hover transition-colors">
+                    <td className="px-4 py-3 text-xs font-mono text-accent-purple">{(d.delivery_id || d.id || '').toString().slice(0, 12)}</td>
+                    <td className="px-4 py-3 text-xs text-text-muted">{(d.order_id || '').toString().slice(0, 12)}</td>
+                    <td className="px-4 py-3 text-xs text-text-secondary">{fromLocation}</td>
+                    <td className="px-4 py-3 text-xs text-text-secondary">{toLocation}</td>
+                    <td className="px-4 py-3 text-xs text-text-dim capitalize">{transport}</td>
+                    <td className="px-4 py-3 text-xs text-text-dim">{duration}</td>
+                    <td className="px-4 py-3"><StatusBadge type={statusMap[st] || 'neutral'} size="xs" /></td>
+                    <td className={`px-4 py-3 text-[10px] font-mono ${isDelayed ? 'text-severity-critical' : 'text-text-dim'}`}>
+                      {eta ? eta.toLocaleString() : '—'}
+                      {isDelayed && <span className="ml-1">(Delayed)</span>}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-1">
+                        {st === 'pending' && <button onClick={() => handleAction(startDelivery, d.delivery_id || d.id)} disabled={actionLoading === (d.delivery_id || d.id)} className="px-2 py-1 rounded text-[10px] font-medium text-accent-blue hover:bg-accent-blue/10 transition-colors disabled:opacity-50">{actionLoading === (d.delivery_id || d.id) ? <Loader size={10} className="animate-spin" /> : 'Start'}</button>}
+                        {st === 'in_transit' && <button onClick={() => handleAction(completeDelivery, d.delivery_id || d.id)} disabled={actionLoading === (d.delivery_id || d.id)} className="px-2 py-1 rounded text-[10px] font-medium text-severity-healthy hover:bg-severity-healthy/10 transition-colors disabled:opacity-50">{actionLoading === (d.delivery_id || d.id) ? <Loader size={10} className="animate-spin" /> : 'Complete'}</button>}
+                      </div>
+                    </td>
+                  </motion.tr>
+                );
+              })}
             </tbody>
           </table>
-        )}
-      </div>
+        </div>
+        {deliveries.length === 0 && <div className="text-center py-12 text-text-muted text-sm">No deliveries found</div>}
+      </GlassCard>
     </div>
   );
 };
